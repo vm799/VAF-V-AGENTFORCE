@@ -105,10 +105,10 @@ def run_morning(skip_finance_ingest: bool = False, skip_education_ingest: bool =
     except Exception as e:
         log.warning("Braindump summary failed: %s", e)
 
-    # 4. Insight engine
-    log.info("[4/5] Running insight engine...")
+    # 4. Daily briefing engine
+    log.info("[4/5] Running daily briefing engine...")
     try:
-        from vaishali.insight_engine.engine import generate_briefing
+        from vaishali.daily_briefing.engine import generate_briefing
 
         briefing = generate_briefing(today)
         log.info("[5/5] Briefing complete!")

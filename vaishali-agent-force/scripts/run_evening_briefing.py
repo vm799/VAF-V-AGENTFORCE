@@ -55,10 +55,10 @@ def run_evening() -> None:
     except Exception as e:
         log.warning("Content summary update failed: %s", e)
 
-    # 4. Run insight engine with updated data
-    log.info("[4/4] Running insight engine...")
+    # 4. Run daily briefing engine with updated data
+    log.info("[4/4] Running daily briefing engine...")
     try:
-        from vaishali.insight_engine.engine import generate_briefing
+        from vaishali.daily_briefing.engine import generate_briefing
 
         briefing = generate_briefing(today)
         log.info("")
