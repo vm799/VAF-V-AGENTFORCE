@@ -520,3 +520,10 @@ if _frontend_dist.exists() and (_frontend_dist / "index.html").exists():
         if file_path.exists() and file_path.is_file():
             return FileResponse(str(file_path))
         return FileResponse(str(_frontend_dist / "index.html"))
+
+
+# ── Server startup ─────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

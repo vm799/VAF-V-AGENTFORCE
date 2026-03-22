@@ -142,7 +142,7 @@ V AgentForce replaces the work of multiple specialist roles across five life dom
 | Looking for my next role | Building AI systems for companies |
 |:---:|:---:|
 | I am a senior finance professional with deep AI engineering capability. I bridge the gap between business strategy and production AI systems — rare in a market full of specialists on one side or the other. | I help companies design and deploy agentic AI systems — from strategy and architecture through to a working, shipped product. If your leadership team is asking "what does AI mean for us?", I can answer that question and build the answer. |
-| [**Connect on LinkedIn →**](https://linkedin.com/in/vaishali-mehmi) | [**Get in touch →**](mailto:vaishali@example.com) |
+| [**Connect on LinkedIn →**](https://linkedin.com/in/vaishali-mehmi) 
 
 </div>
 
