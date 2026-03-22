@@ -9,7 +9,7 @@
 **Name:** Vaishali Mehmi
 **Location:** United Kingdom
 **Email:** vaishalimehmi@yahoo.co.uk
-**Role:** [Your job title] at a global asset management company
+**Role:** Business analyst at a global asset management company
 **Career stage:** Senior professional, actively working toward promotion
 
 ---
@@ -31,7 +31,8 @@ I am building **V AgentForce** — my personal AI operating system that runs eve
 - Infrastructure: macOS local, planning cloud deployment
 - Storage: Obsidian (vault), SQLite (local data), JSON flat files
 
-**GitHub:** [Add your GitHub URL here]
+**GitHub:** 
+    https://github.com/vm799
 
 ---
 
@@ -39,7 +40,7 @@ I am building **V AgentForce** — my personal AI operating system that runs eve
 
 I am building a personal brand and income stream around **teaching AI skills to professionals and companies.** My audience is CEOs, senior leaders, founders, and ambitious professionals who need to understand and use AI but don't know where to start.
 
-**Content channels:**
+**Content channels:** havent created yet
 - YouTube: [Add channel URL]
 - Instagram: [Add handle]
 - LinkedIn: [Add profile URL]
@@ -55,7 +56,8 @@ I am building a personal brand and income stream around **teaching AI skills to 
 **Communities I'm part of:**
 - **Multiverses** — AI/tech community
 - **Chief Notes Skool** — learning and notes community
-- [Add others]
+-clief notes
+women build ai
 
 ---
 
@@ -63,9 +65,9 @@ I am building a personal brand and income stream around **teaching AI skills to 
 
 > Fill in what's relevant. The Finance CFO agent uses this as baseline context.
 
-**Income:** [Monthly take-home after tax, £]
-**Primary accounts:** Monzo (day-to-day), [other accounts]
-**Regular commitments:** Rent/mortgage: £[X] · Childcare: £[X] · Bills: £[X] · Subscriptions: £[X]
+**Income:** £65k
+**Primary accounts:** First direct, barclasy, amex, hsbc, santander
+**Regular commitments:** Rent/mortgage: £1000 · · Bills: £[3000] · Subscriptions: £[90]
 **Monthly discretionary:** ~£[X]
 **Current savings:** £[X] in [account]
 **Savings goal:** £[X] for [purpose — house deposit / emergency fund / investment / business]
@@ -124,8 +126,8 @@ I am building a personal brand and income stream around **teaching AI skills to 
 
 - Promoted at work with a meaningful salary increase
 - At least one software product generating income
-- Teaching income stream established (£[X]/month)
-- Clear financial plan on track toward [goal]
+- Teaching income stream established (£[20k]/month)
+- Clear financial plan on track toward [10m]
 - Health and energy are supports to ambition, not obstacles
 - V AgentForce is genuinely running my life intelligence layer
 - I am known in my communities as someone building seriously with AI
