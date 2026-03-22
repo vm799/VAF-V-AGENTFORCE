@@ -1,0 +1,92 @@
+[
+  {
+    "id": "a1b2c3d4",
+    "title": "How I built a personal AI agent system on my Mac",
+    "type": "linkedin",
+    "target_channel": "LinkedIn",
+    "status": "idea",
+    "effort_estimate": "M",
+    "impact_estimate": 8,
+    "source_ids": [],
+    "tags": [
+      "ai",
+      "python",
+      "productivity"
+    ],
+    "notes": "",
+    "created_at": "2026-03-20T10:00:00",
+    "updated_at": "2026-03-20T10:00:00"
+  },
+  {
+    "id": "e5f6g7h8",
+    "title": "5 Python libraries every finance professional should know",
+    "type": "long_form",
+    "target_channel": "Blog / Medium",
+    "status": "drafting",
+    "effort_estimate": "L",
+    "impact_estimate": 7,
+    "source_ids": [],
+    "tags": [
+      "python",
+      "finance",
+      "career"
+    ],
+    "notes": "",
+    "created_at": "2026-03-19T10:00:00",
+    "updated_at": "2026-03-20T14:00:00"
+  },
+  {
+    "id": "i9j0k1l2",
+    "title": "Quick tip: Automating bank statement parsing with Python",
+    "type": "linkedin",
+    "target_channel": "LinkedIn",
+    "status": "needs_review",
+    "effort_estimate": "S",
+    "impact_estimate": 6,
+    "source_ids": [],
+    "tags": [
+      "python",
+      "automation",
+      "finance"
+    ],
+    "notes": "",
+    "created_at": "2026-03-18T10:00:00",
+    "updated_at": "2026-03-21T09:00:00"
+  },
+  {
+    "id": "m3n4o5p6",
+    "title": "Building a personal knowledge graph with Obsidian + Python",
+    "type": "long_form",
+    "target_channel": "Blog / Medium",
+    "status": "idea",
+    "effort_estimate": "L",
+    "impact_estimate": 9,
+    "source_ids": [],
+    "tags": [
+      "knowledge",
+      "obsidian",
+      "python"
+    ],
+    "notes": "",
+    "created_at": "2026-03-17T10:00:00",
+    "updated_at": "2026-03-17T10:00:00"
+  },
+  {
+    "id": "q7r8s9t0",
+    "title": "The CFO Dashboard: How I track my personal finances like a business",
+    "type": "video_script",
+    "target_channel": "YouTube",
+    "status": "idea",
+    "effort_estimate": "L",
+    "impact_estimate": 9,
+    "source_ids": [],
+    "tags": [
+      "finance",
+      "dashboard",
+      "personal"
+    ],
+    "notes": "",
+    "created_at": "2026-03-16T10:00:00",
+    "updated_at": "2026-03-16T10:00:00"
+  }
+]

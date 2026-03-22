@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V AgentForce — Architecture & Daily Ops</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --border: #2a2a2a;
+    --gold: #c9a84c;
+    --gold-dim: #8a6f2e;
+    --teal: #2dd4bf;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --text-muted: #555;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+  h1 { font-family: 'SF Pro Display', 'Segoe UI', sans-serif; font-size: 24px; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 4px; }
+  h2 { font-family: 'SF Pro Display', 'Segoe UI', sans-serif; font-size: 16px; color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 20px; }
+  .subtitle { color: var(--text-dim); font-size: 12px; margin-bottom: 40px; font-family: 'SF Pro Display', 'Segoe UI', sans-serif; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .tab { padding: 10px 20px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-family: 'SF Pro Display', 'Segoe UI', sans-serif; font-size: 13px; transition: all 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ARCHITECTURE DIAGRAM */
+  .arch { display: grid; gap: 16px; }
+
+  /* SYSTEM BOXES */
+  .system {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+  }
+  .system-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .system-icon { font-size: 20px; }
+  .system-title { font-size: 15px; font-weight: 700; font-family: 'SF Pro Display', 'Segoe UI', sans-serif; }
+  .system-subtitle { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; margin-left: auto;
+  }
+  .badge-auto { background: rgba(74, 222, 128, 0.15); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.3); }
+  .badge-manual { background: rgba(251, 146, 60, 0.15); color: var(--orange); border: 1px solid rgba(251, 146, 60, 0.3); }
+  .badge-hybrid { background: rgba(167, 139, 250, 0.15); color: var(--purple); border: 1px solid rgba(167, 139, 250, 0.3); }
+
+  /* COMPONENTS */
+  .components { display: flex; flex-wrap: wrap; gap: 8px; }
+  .component {
+    padding: 6px 12px; border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .c-gold { background: rgba(201, 168, 76, 0.1); color: var(--gold); border-color: rgba(201, 168, 76, 0.2); }
+  .c-teal { background: rgba(45, 212, 191, 0.1); color: var(--teal); border-color: rgba(45, 212, 191, 0.2); }
+  .c-purple { background: rgba(167, 139, 250, 0.1); color: var(--purple); border-color: rgba(167, 139, 250, 0.2); }
+  .c-orange { background: rgba(251, 146, 60, 0.1); color: var(--orange); border-color: rgba(251, 146, 60, 0.2); }
+  .c-blue { background: rgba(96, 165, 250, 0.1); color: var(--blue); border-color: rgba(96, 165, 250, 0.2); }
+  .c-green { background: rgba(74, 222, 128, 0.1); color: var(--green); border-color: rgba(74, 222, 128, 0.2); }
+  .c-red { background: rgba(248, 113, 113, 0.1); color: var(--red); border-color: rgba(248, 113, 113, 0.2); }
+
+  /* FLOW ARROWS */
+  .flow-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+  }
+  .flow-line {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .flow-from { color: var(--text-dim); font-size: 11px; }
+  .flow-arrow { color: var(--text-muted); font-size: 18px; }
+  .flow-to { color: var(--text-dim); font-size: 11px; }
+  .flow-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--surface);
+    padding: 2px 8px; border-radius: 4px;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .arrow-box {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px;
+  }
+  .arrow-icon { font-size: 20px; color: var(--gold-dim); }
+  .arrow-note { font-size: 9px; color: var(--text-muted); text-align: center; white-space: nowrap; }
+
+  /* FULL FLOW DIAGRAM */
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    overflow-x: auto;
+  }
+  .flow-steps {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    min-width: max-content;
+  }
+  .step-node {
+    display: flex; flex-direction: column; align-items: center;
+    width: 140px;
+  }
+  .node-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    width: 130px;
+  }
+  .node-emoji { font-size: 22px; margin-bottom: 6px; }
+  .node-title { font-size: 11px; font-weight: 700; font-family: 'SF Pro Display', 'Segoe UI', sans-serif; color: var(--text); margin-bottom: 3px; }
+  .node-desc { font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+  .step-connector {
+    display: flex; align-items: center;
+    padding-top: 28px;
+    color: var(--text-muted);
+    font-size: 16px;
+    width: 30px;
+    justify-content: center;
+  }
+  .step-label { font-size: 9px; color: var(--text-muted); margin-top: 6px; text-align: center; max-width: 120px; }
+
+  /* DAILY OPS */
+  .ops-day { margin-bottom: 32px; }
+  .ops-time {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .time-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .time-label { font-size: 12px; color: var(--text-dim); font-family: 'SF Pro Display', 'Segoe UI', sans-serif; }
+  .ops-action {
+    display: flex; gap: 12px; padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .action-agent {
+    min-width: 80px; font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px; text-align: center;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-top: 1px;
+  }
+  .action-body { flex: 1; }
+  .action-title { font-size: 12px; font-weight: 600; font-family: 'SF Pro Display', 'Segoe UI', sans-serif; margin-bottom: 3px; }
+  .action-detail { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+  .action-cmd {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 3px 8px;
+    font-size: 11px; color: var(--teal);
+    display: inline-block; margin-top: 4px;
+  }
+  .where-tag {
+    font-size: 9px; padding: 2px 6px; border-radius: 3px;
+    text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;
+    white-space: nowrap; margin-top: 3px; display: inline-block;
+  }
+  .where-claude { background: rgba(201, 168, 76, 0.1); color: var(--gold); border: 1px solid rgba(201, 168, 76, 0.2); }
+  .where-telegram { background: rgba(96, 165, 250, 0.1); color: var(--blue); border: 1px solid rgba(96, 165, 250, 0.2); }
+  .where-auto { background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.2); }
+  .where-obsidian { background: rgba(167, 139, 250, 0.1); color: var(--purple); border: 1px solid rgba(167, 139, 250, 0.2); }
+  .where-dashboard { background: rgba(45, 212, 191, 0.1); color: var(--teal); border: 1px solid rgba(45, 212, 191, 0.2); }
+
+  /* AUTOMATION TABLE */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  th { background: var(--surface2); color: var(--text-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .auto-yes { color: var(--green); font-weight: 600; }
+  .auto-no { color: var(--orange); font-weight: 600; }
+  .auto-partial { color: var(--purple); font-weight: 600; }
+
+  /* SECTION DIVIDER */
+  .section-divider { margin: 32px 0; border: none; border-top: 1px solid var(--border); }
+  .section-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--text-muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* AGENT QUICK REF */
+  .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .agent-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .agent-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; font-family: 'SF Pro Display', 'Segoe UI', sans-serif; }
+  .agent-trigger { font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+  .agent-example { font-size: 10px; color: var(--teal); margin-top: 4px; font-style: italic; }
+
+  .gap-banner {
+    background: rgba(251, 146, 60, 0.08);
+    border: 1px solid rgba(251, 146, 60, 0.2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .gap-title { color: var(--orange); font-size: 12px; font-weight: 700; margin-bottom: 4px; font-family: 'SF Pro Display', 'Segoe UI', sans-serif; }
+  .gap-body { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<h1>V AGENTFORCE</h1>
+<h2>Architecture · Flow · Daily Operations</h2>
+<p class="subtitle">Updated: March 2026 · Your AI-powered operating system, mapped.</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('arch')">Architecture</div>
+  <div class="tab" onclick="showTab('flow')">Full Flow</div>
+  <div class="tab" onclick="showTab('ops')">Daily Ops</div>
+  <div class="tab" onclick="showTab('agents')">Agent Quick Ref</div>
+  <div class="tab" onclick="showTab('auto')">What's Automated</div>
+</div>
+
+<!-- ARCHITECTURE TAB -->
+<div class="panel active" id="tab-arch">
+
+  <div class="section-title">The Three Pillars</div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+
+    <div class="system" style="border-color: rgba(201, 168, 76, 0.3);">
+      <div class="system-header">
+        <span class="system-icon">🧠</span>
+        <div>
+          <div class="system-title" style="color: var(--gold);">V AGENTFORCE</div>
+          <div class="system-subtitle">Claude Project — The Brain</div>
+        </div>
+        <span class="badge badge-manual">You initiate</span>
+      </div>
+      <div class="components">
+        <span class="component c-gold">CLAUDE.md</span>
+        <span class="component c-gold">WHO_I_AM.md</span>
+        <span class="component c-gold">GOALS_2026</span>
+        <span class="component c-teal">SENTINEL</span>
+        <span class="component c-teal">FORGE</span>
+        <span class="component c-teal">AMPLIFY</span>
+        <span class="component c-teal">PHOENIX</span>
+        <span class="component c-teal">VITALITY</span>
+        <span class="component c-teal">CIPHER</span>
+        <span class="component c-teal">AEGIS</span>
+        <span class="component c-teal">NEXUS</span>
+        <span class="component c-purple">TEAM_MANIFEST</span>
+        <span class="component c-purple">OBSIDIAN_VAULT</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 12px; line-height: 1.5;">
+        Where V <strong>thinks, plans, analyses, and creates</strong>. Access via Claude mobile or desktop. Every chat knows WHO_I_AM, GOALS_2026, and the full agent roster.
+      </p>
+    </div>
+
+    <div class="system" style="border-color: rgba(45, 212, 191, 0.3);">
+      <div class="system-header">
+        <span class="system-icon">⚙️</span>
+        <div>
+          <div class="system-title" style="color: var(--teal);">VAF PIPELINE</div>
+          <div class="system-subtitle">FastAPI + SQLite — The Engine</div>
+        </div>
+        <span class="badge badge-auto">Automated</span>
+      </div>
+      <div class="components">
+        <span class="component c-blue">Telegram Bot</span>
+        <span class="component c-blue">URL Queue</span>
+        <span class="component c-blue">NLM Batch 8pm</span>
+        <span class="component c-green">Obsidian Sync</span>
+        <span class="component c-orange">Finance Parser</span>
+        <span class="component c-teal">Dashboard API</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 12px; line-height: 1.5;">
+        Where V <strong>drops raw inputs and the machine processes them</strong>. URLs → saved → NLM batch → Obsidian. Runs silently in background on your Mac.
+      </p>
+    </div>
+
+    <div class="system" style="border-color: rgba(167, 139, 250, 0.3);">
+      <div class="system-header">
+        <span class="system-icon">🗄️</span>
+        <div>
+          <div class="system-title" style="color: var(--purple);">OBSIDIAN VAULT</div>
+          <div class="system-subtitle">V AgentForce/ — The Memory</div>
+        </div>
+        <span class="badge badge-hybrid">Auto + Manual</span>
+      </div>
+      <div class="components">
+        <span class="component c-purple">00 INBOX</span>
+        <span class="component c-purple">01 Brain Dumps</span>
+        <span class="component c-purple">02 Finance</span>
+        <span class="component c-purple">03 Builds</span>
+        <span class="component c-purple">04 Content</span>
+        <span class="component c-purple">06 Learning</span>
+        <span class="component c-purple">08 Career</span>
+        <span class="component c-purple">10 Goals</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 12px; line-height: 1.5;">
+        V's <strong>permanent second brain</strong>. Auto-receives NLM insights from the pipeline. V manually pastes high-value Claude Project outputs. Knowledge Graph connects everything.
+      </p>
+    </div>
+  </div>
+
+  <div class="section-title">How the Three Pillars Connect</div>
+
+  <div class="flow-diagram">
+    <div style="display: flex; align-items: center; gap: 0; flex-wrap: nowrap;">
+
+      <!-- V -->
+      <div class="step-node">
+        <div class="node-box" style="border-color: rgba(201, 168, 76, 0.4);">
+          <div class="node-emoji">👩🏽</div>
+          <div class="node-title" style="color: var(--gold);">V</div>
+          <div class="node-desc">Phone · Desktop · Ideas · Links · Statements</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; width: 60px; gap: 4px; padding-top: 10px;">
+        <div style="font-size: 11px; color: var(--gold);">→ Claude App</div>
+        <div style="font-size: 18px; color: var(--text-muted);">→</div>
+        <div style="font-size: 11px; color: var(--blue);">→ Telegram</div>
+      </div>
+
+      <!-- Split into two paths -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+
+        <!-- Path A: Claude Project -->
+        <div style="display: flex; align-items: center; gap: 0;">
+          <div class="step-node">
+            <div class="node-box" style="border-color: rgba(201, 168, 76, 0.4);">
+              <div class="node-emoji">🧠</div>
+              <div class="node-title" style="color: var(--gold);">Claude Project</div>
+              <div class="node-desc">8 agents read WHO_I_AM + GOALS</div>
+            </div>
+          </div>
+          <div style="width: 30px; text-align: center; padding-top: 10px; color: var(--text-muted);">→</div>
+          <div class="step-node">
+            <div class="node-box" style="border-color: rgba(201, 168, 76, 0.3);">
+              <div class="node-emoji">📝</div>
+              <div class="node-title">Agent Output</div>
+              <div class="node-desc">Analysis, plans, code, notes in chat</div>
+            </div>
+          </div>
+          <div style="width: 30px; text-align: center; padding-top: 10px; color: var(--text-muted);">→</div>
+          <div class="step-node">
+            <div class="node-box" style="border-color: rgba(167, 139, 250, 0.3);">
+              <div class="node-emoji">🟣</div>
+              <div class="node-title" style="color: var(--purple);">Obsidian</div>
+              <div class="node-desc" style="color: var(--orange);">V pastes<br>manually</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Path B: VAF Pipeline -->
+        <div style="display: flex; align-items: center; gap: 0;">
+          <div class="step-node">
+            <div class="node-box" style="border-color: rgba(96, 165, 250, 0.4);">
+              <div class="node-emoji">🤖</div>
+              <div class="node-title" style="color: var(--blue);">Telegram Bot</div>
+              <div class="node-desc">URLs, photos, text → SQLite</div>
+            </div>
+          </div>
+          <div style="width: 30px; text-align: center; padding-top: 10px; color: var(--text-muted);">→</div>
+          <div class="step-node">
+            <div class="node-box" style="border-color: rgba(96, 165, 250, 0.3);">
+              <div class="node-emoji">⏱️</div>
+              <div class="node-title">NLM Batch</div>
+              <div class="node-desc" style="color: var(--green);">8pm auto · deep article analysis</div>
+            </div>
+          </div>
+          <div style="width: 30px; text-align: center; padding-top: 10px; color: var(--text-muted);">→</div>
+          <div class="step-node">
+            <div class="node-box" style="border-color: rgba(167, 139, 250, 0.3);">
+              <div class="node-emoji">🟣</div>
+              <div class="node-title" style="color: var(--purple);">Obsidian</div>
+              <div class="node-desc" style="color: var(--green);">Auto-written<br>to 06 Learning/</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="width: 30px; text-align: center; padding-top: 10px; color: var(--text-muted);">→</div>
+
+      <!-- Dashboard -->
+      <div class="step-node">
+        <div class="node-box" style="border-color: rgba(45, 212, 191, 0.4);">
+          <div class="node-emoji">📊</div>
+          <div class="node-title" style="color: var(--teal);">Dashboard</div>
+          <div class="node-desc">localhost — view pipeline status + insights</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="margin-top: 16px;" class="gap-banner">
+    <div class="gap-title">⚡ The Key Distinction</div>
+    <div class="gap-body">
+      <strong style="color: var(--text);">Claude Project = your thinking partner</strong> — for analysis, planning, decisions, and deep work. You initiate, it responds. Outputs are high-quality but require V to paste them into Obsidian.<br><br>
+      <strong style="color: var(--text);">VAF Pipeline = your automation layer</strong> — processes URLs and content in the background, writes directly to Obsidian at 8pm. No action from V required after the initial drop.<br><br>
+      <strong style="color: var(--text);">Obsidian = where everything lives permanently</strong> — both layers converge here. The knowledge graph connects them.
+    </div>
+  </div>
+
+</div>
+
+<!-- FULL FLOW TAB -->
+<div class="panel" id="tab-flow">
+  <div class="section-title">Trigger → Process → Output — Every Input Type</div>
+
+  <div style="display: grid; gap: 12px;">
+
+    <!-- Brain Dump Flow -->
+    <div class="system">
+      <div class="system-header">
+        <span class="system-icon">🌊</span>
+        <div>
+          <div class="system-title">Brain Dump / "I need to think"</div>
+          <div class="system-subtitle">You have too much in your head</div>
+        </div>
+        <span class="badge" style="background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);">Claude App</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <span class="component c-gold">V types or voice-to-texts</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-teal">SENTINEL activates</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-blue">CAPTURES everything</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-orange">EXTRACTS orders/intel/flags</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-green">ROUTES to agents</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">V pastes to 01 Brain Dumps/</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 10px;">Example: <span style="color:var(--teal);">"I'm overwhelmed. I need to: finish VAF, post more content, review my finances, I keep forgetting to go to the gym..."</span> → SENTINEL gives you 3 orders, routes finance to PHOENIX, builds to FORGE, content to AMPLIFY.</p>
+    </div>
+
+    <!-- URL/Article Flow -->
+    <div class="system">
+      <div class="system-header">
+        <span class="system-icon">🔗</span>
+        <div>
+          <div class="system-title">Article / Link Drop</div>
+          <div class="system-subtitle">Something worth saving for later</div>
+        </div>
+        <span class="badge badge-auto">Telegram → Auto at 8pm</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <span class="component c-blue">V sends link to Telegram bot</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-blue">Saved to nlm_queue.json</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-gold">8pm NLM batch runs</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-green">Deep analysis extracted</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">Auto-written to 06 Learning/</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-teal">Visible on Dashboard</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 10px;">Zero effort from V after the drop. If you also want CIPHER's take: <span style="color:var(--teal);">"CIPHER, analyse this [URL]"</span> in Claude Project for instant signal rating + build/teach/monetise angles.</p>
+    </div>
+
+    <!-- Bank Statement Flow -->
+    <div class="system">
+      <div class="system-header">
+        <span class="system-icon">💰</span>
+        <div>
+          <div class="system-title">Bank Statement / Finance Review</div>
+          <div class="system-subtitle">Monthly deep dive</div>
+        </div>
+        <span class="badge" style="background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);">Claude App</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <span class="component c-gold">V uploads PDF/photo to Claude chat</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-orange">PHOENIX activates</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-orange">EXTRACTS all transactions</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-orange">BENCHMARKS + FLAGS</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-orange">PHOENIX VERDICT</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">V pastes to 02 Finance/Statements/</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 10px;">Say: <span style="color:var(--teal);">"PHOENIX, here's my March statement"</span> + attach image/PDF. Gets full categorisation, flags unused subscriptions, gives CUT/GROW/BUILD/FIRE verdict.</p>
+    </div>
+
+    <!-- Build/Code Flow -->
+    <div class="system">
+      <div class="system-header">
+        <span class="system-icon">🏗️</span>
+        <div>
+          <div class="system-title">Build / Code Session</div>
+          <div class="system-subtitle">Building features, debugging, architecture</div>
+        </div>
+        <span class="badge" style="background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);">Claude App</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <span class="component c-gold">V describes idea or pastes code/error</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-teal">FORGE activates</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-teal">SCOPE → ARCHITECT → BUILD</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-red">AEGIS security review</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">V pastes sprint notes to 03 Builds/</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 10px;">Say: <span style="color:var(--teal);">"FORGE, I want to build X"</span> or paste an error + "FORGE, help". Gets production-ready code + architecture decisions. For security layer: <span style="color:var(--teal);">"AEGIS, review this before I ship."</span></p>
+    </div>
+
+    <!-- Content Flow -->
+    <div class="system">
+      <div class="system-header">
+        <span class="system-icon">📱</span>
+        <div>
+          <div class="system-title">Content Creation</div>
+          <div class="system-subtitle">LinkedIn, YouTube, Substack, course ideas</div>
+        </div>
+        <span class="badge" style="background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);">Claude App</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <span class="component c-gold">V shares idea or VAF update</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">AMPLIFY activates</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">Hook + body + CTA crafted</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">Repurposing plan across platforms</span>
+        <span style="color: var(--text-muted);">→</span>
+        <span class="component c-purple">V pastes draft to 04 Content/</span>
+      </div>
+      <p style="font-size: 11px; color: var(--text-dim); margin-top: 10px;">Say: <span style="color:var(--teal);">"AMPLIFY, I just shipped X — what's the content?"</span> or <span style="color:var(--teal);">"AMPLIFY, content calendar for this week."</span></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAILY OPS TAB -->
+<div class="panel" id="tab-ops">
+  <div class="section-title">Your Daily Operating Rhythm</div>
+
+  <div class="ops-day">
+    <div class="ops-time">
+      <div class="time-badge">☀️ MORNING — 5 mins</div>
+      <div class="time-label">On your phone, before you start work</div>
+    </div>
+    <div class="ops-action">
+      <div class="action-agent" style="background: rgba(201,168,76,.1); color: var(--gold); border: 1px solid rgba(201,168,76,.2);">SENTINEL</div>
+      <div class="action-body">
+        <div class="action-title">Morning Brief</div>
+        <div class="action-detail">SENTINEL reads GOALS_2026, knows the date, gives you 3 orders for the day. Each order tagged to the right agent.</div>
+        <div class="action-cmd">"SENTINEL, morning brief"</div>
+        <div style="margin-top: 6px;"><span class="where-tag where-claude">Claude App</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ops-day">
+    <div class="ops-time">
+      <div class="time-badge">📱 DURING THE DAY — as things happen</div>
+      <div class="time-label">Capture without friction</div>
+    </div>
+    <div class="ops-action">
+      <div class="action-agent" style="background: rgba(96,165,250,.1); color: var(--blue); border: 1px solid rgba(96,165,250,.2);">PIPELINE</div>
+      <div class="action-body">
+        <div class="action-title">Drop links to Telegram</div>
+        <div class="action-detail">Any article, video, Twitter/X thread worth saving → forward to Telegram bot. Queued for 8pm NLM batch. Zero thinking required now.</div>
+        <div class="action-cmd">[forward link to @your_vaf_bot]</div>
+        <div style="margin-top: 6px;"><span class="where-tag where-telegram">Telegram</span></div>
+      </div>
+    </div>
+    <div class="ops-action">
+      <div class="action-agent" style="background: rgba(45,212,191,.1); color: var(--teal); border: 1px solid rgba(45,212,191,.2);">ANY AGENT</div>
+      <div class="action-body">
+        <div class="action-title">Quick question → right agent</div>
+        <div class="action-detail">FORGE for a code question during a meeting. PHOENIX if you see a great savings account. CIPHER if someone sends you an AI article. NEXUS if you have a build idea.</div>
+        <div class="action-cmd">"CIPHER, is this worth my time? [paste article]"</div>
+        <div style="margin-top: 6px;"><span class="where-tag where-claude">Claude App</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ops-day">
+    <div class="ops-time">
+      <div class="time-badge">🌆 EVENING — 8pm AUTOMATIC</div>
+      <div class="time-label">The machine works while you rest</div>
+    </div>
+    <div class="ops-action">
+      <div class="action-agent" style="background: rgba(74,222,128,.1); color: var(--green); border: 1px solid rgba(74,222,128,.2);">AUTO</div>
+      <div class="action-body">
+        <div class="action-title">NLM Batch Runs (zero action from V)</div>
+        <div class="action-detail">All queued URLs processed by NotebookLM. Deep summaries extracted. Notes auto-written to Obsidian → 06 Learning/Insights/. Pipeline status updates on Dashboard.</div>
+        <div class="action-cmd">cron: 0 20 * * * → scripts/nlm_batch.py</div>
+        <div style="margin-top: 6px;"><span class="where-tag where-auto">Automated</span> <span class="where-tag where-obsidian">→ Obsidian</span> <span class="where-tag where-dashboard">→ Dashboard</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ops-day">
+    <div class="ops-time">
+      <div class="time-badge">🌙 EVENING — 20-30 mins (2-3x per week)</div>
+      <div class="time-label">The real work sessions</div>
+    </div>
+    <div class="ops-action">
+      <div class="action-agent" style="background: rgba(45,212,191,.1); color: var(--teal); border: 1px solid rgba(45,212,191,.2);">FORGE</div>
+      <div class="action-body">
+        <div class="action-title">Build Session (VAF or new project)</div>
+        <div class="action-detail">Focused building. FORGE has full VAF context. Sprint → ship something → paste notes to 03 Builds/VAF/Sprints/.</div>
+        <div class="action-cmd">"FORGE, continuing from yesterday — [what you're building]"</div>
+        <div style="margin-top: 6px;"><span class="where-tag where-claude">Claude App</span> <span class="where-tag where-obsidian">→ Obsidian</span></div>
+      </div>
+    </div>
+    <div class="ops-action">
+      <div class="action-agent" style="background: rgba(167,139,250,.1); color: var(--purple); border: 1px solid rgba(167,139,250,.2);">AMPLIFY</div>
+      <div class="action-body">
+        <div class="action-title">Content batch (if not a build night)</div>
+        <div class="action-detail">AMPLIFY creates 3-4 pieces from one idea. Schedule tomorrow's post. Review the week's NLM insights for content angles.</div>
+        <div class="action-cmd">"AMPLIFY, I shipped X this week — build me the content"</div>
+        <div style="margin-top: 6px;"><span class="where-tag where-claude">Claude App</span> <span class="where-tag where-obsidian">→ Obsidian 04 Content/</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top: 32px;">Weekly Rhythm</div>
+
+  <table>
+    <thead>
+      <tr><th>Day</th><th>Agent</th><th>What Happens</th><th>Where</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="color:var(--text);">Monday</td><td><span class="component c-teal" style="display:inline-block;">SENTINEL</span></td><td>Week brief + 3 priorities set</td><td><span class="where-tag where-claude">Claude App</span></td></tr>
+      <tr><td style="color:var(--text);">Tue/Wed/Thu</td><td><span class="component c-teal" style="display:inline-block;">FORGE</span></td><td>Build sessions — VAF or new project</td><td><span class="where-tag where-claude">Claude App</span></td></tr>
+      <tr><td style="color:var(--text);">Fri</td><td><span class="component c-purple" style="display:inline-block;">AMPLIFY</span></td><td>Content for the weekend + batch next week's posts</td><td><span class="where-tag where-claude">Claude App</span></td></tr>
+      <tr><td style="color:var(--text);">Sat</td><td><span class="component c-orange" style="display:inline-block;">PHOENIX</span></td><td>Monthly statement review (when available)</td><td><span class="where-tag where-claude">Claude App</span></td></tr>
+      <tr><td style="color:var(--text);">Sun</td><td><span class="component c-teal" style="display:inline-block;">SENTINEL</span></td><td>Weekly synthesis — wins, open orders, next week's priority</td><td><span class="where-tag where-claude">Claude App</span></td></tr>
+      <tr><td style="color:var(--text);">Daily auto</td><td><span class="component c-green" style="display:inline-block;">PIPELINE</span></td><td>8pm NLM batch → Obsidian</td><td><span class="where-tag where-auto">Automated</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="gap-banner">
+    <div class="gap-title">⚡ The Golden Rule</div>
+    <div class="gap-body">
+      <strong style="color: var(--text);">Think in 3 modes:</strong><br><br>
+      🧠 <strong style="color: var(--gold);">Thinking/Planning → Claude Project</strong> (SENTINEL for overview, specific agent for depth)<br>
+      🔗 <strong style="color: var(--blue);">Saving raw inputs → Telegram bot</strong> (URLs, photos, brain dumps you'll process later)<br>
+      📊 <strong style="color: var(--teal);">Checking pipeline status → Dashboard</strong> (localhost — what's been processed, what's pending)<br><br>
+      The system runs best when V doesn't overthink <em>where</em> to put things. When in doubt: Claude Project.
+    </div>
+  </div>
+</div>
+
+<!-- AGENT QUICK REF -->
+<div class="panel" id="tab-agents">
+  <div class="section-title">Say the Name — The Agent Activates</div>
+  <div class="agents-grid">
+    <div class="agent-card" style="border-color: rgba(201,168,76,.3);">
+      <div class="agent-name" style="color:var(--gold);">🎖️ SENTINEL</div>
+      <div class="agent-trigger">Brain dump · morning brief · "I'm stuck" · weekly synthesis · route me</div>
+      <div class="agent-example">"SENTINEL, morning brief"<br>"SENTINEL, I'm overwhelmed, brain dump..."</div>
+    </div>
+    <div class="agent-card" style="border-color: rgba(45,212,191,.3);">
+      <div class="agent-name" style="color:var(--teal);">🏗️ FORGE</div>
+      <div class="agent-trigger">Code · builds · architecture · GitHub · error · "I want to build X"</div>
+      <div class="agent-example">"FORGE, here's the error..."<br>"FORGE, I want to build an iOS app for..."</div>
+    </div>
+    <div class="agent-card" style="border-color: rgba(167,139,250,.3);">
+      <div class="agent-name" style="color:var(--purple);">📱 AMPLIFY</div>
+      <div class="agent-trigger">Content · LinkedIn · YouTube · Substack · course · "what's the content angle?"</div>
+      <div class="agent-example">"AMPLIFY, I shipped X — build me the content"<br>"AMPLIFY, content calendar for April"</div>
+    </div>
+    <div class="agent-card" style="border-color: rgba(251,146,60,.3);">
+      <div class="agent-name" style="color:var(--orange);">💰 PHOENIX</div>
+      <div class="agent-trigger">Bank statement · spending · savings · ISA · financial decision</div>
+      <div class="agent-example">"PHOENIX, here's my March statement [attach]"<br>"PHOENIX, is a Vanguard ISA better than Marcus?"</div>
+    </div>
+    <div class="agent-card" style="border-color: rgba(74,222,128,.3);">
+      <div class="agent-name" style="color:var(--green);">⚡ VITALITY</div>
+      <div class="agent-trigger">Food · gym · sleep · energy · stress · health check-in · burnout</div>
+      <div class="agent-example">"VITALITY, I have no energy this week"<br>"VITALITY, quick high-protein lunch ideas"</div>
+    </div>
+    <div class="agent-card" style="border-color: rgba(96,165,250,.3);">
+      <div class="agent-name" style="color:var(--blue);">🔍 CIPHER</div>
+      <div class="agent-trigger">Article · link · "is this worth my time?" · AI news · learning roadmap</div>
+      <div class="agent-example">"CIPHER, is this worth my time? [URL]"<br>"CIPHER, what do I need to learn about MCP?"</div>
+    </div>
+    <div class="agent-card" style="border-color: rgba(248,113,113,.3);">
+      <div class="agent-name" style="color:var(--red);">🛡️ AEGIS</div>
+      <div class="agent-trigger">AI security · MAESTRO · OWASP · review before ship · security advice</div>
+      <div class="agent-example">"AEGIS, review this before I ship"<br>"AEGIS, explain MAESTRO Layer 3 for my client"</div>
+    </div>
+    <div class="agent-card" style="border-color: rgba(201,168,76,.3);">
+      <div class="agent-name" style="color:var(--gold);">🔮 NEXUS</div>
+      <div class="agent-trigger">A2A · MCP · "what should I build?" · market gap · agentic future · daily build idea</div>
+      <div class="agent-example">"NEXUS, what should I build today?"<br>"NEXUS, explain A2A for a client pitch"</div>
+    </div>
+  </div>
+  <div style="margin-top: 24px;" class="gap-banner">
+    <div class="gap-title">No agent prefix needed for SENTINEL</div>
+    <div class="gap-body">CLAUDE.md routes automatically based on your message content. But saying the name explicitly activates that agent's full persona and expert roster. For best results: <strong style="color: var(--text);">always name the agent</strong> you want.</div>
+  </div>
+</div>
+
+<!-- AUTOMATION TABLE -->
+<div class="panel" id="tab-auto">
+  <div class="section-title">What's Automated vs Manual</div>
+
+  <div class="gap-banner">
+    <div class="gap-title">Current State — March 2026</div>
+    <div class="gap-body">The VAF pipeline handles the automation layer. Claude Project interactions are intentionally manual — you're in control of what gets into your vault. The opportunity to increase automation is in step 4 below.</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>Step</th><th>How</th><th>Automated?</th><th>Where output goes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--text-dim);">1</td>
+        <td style="color:var(--text);">Drop link via Telegram</td>
+        <td style="color:var(--text-dim);">V forwards URL to bot</td>
+        <td><span class="auto-partial">Manual drop</span> → auto queue</td>
+        <td>nlm_queue.json (SQLite)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-dim);">2</td>
+        <td style="color:var(--text);">NLM batch processing</td>
+        <td style="color:var(--text-dim);">Cron 8pm daily</td>
+        <td><span class="auto-yes">✓ Fully automated</span></td>
+        <td>Obsidian 06 Learning/Insights/</td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-dim);">3</td>
+        <td style="color:var(--text);">Dashboard update</td>
+        <td style="color:var(--text-dim);">FastAPI serves live data</td>
+        <td><span class="auto-yes">✓ Fully automated</span></td>
+        <td>localhost dashboard</td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-dim);">4</td>
+        <td style="color:var(--text);">Claude Project → Obsidian</td>
+        <td style="color:var(--text-dim);">V pastes markdown output</td>
+        <td><span class="auto-no">✗ Manual paste</span></td>
+        <td>Relevant vault folder</td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-dim);">5</td>
+        <td style="color:var(--text);">Bank statement parsing</td>
+        <td style="color:var(--text-dim);">V attaches image/PDF to Claude</td>
+        <td><span class="auto-no">✗ Manual trigger</span></td>
+        <td>02 Finance/Statements/ (manual paste)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-dim);">6</td>
+        <td style="color:var(--text);">Morning brief</td>
+        <td style="color:var(--text-dim);">V types "SENTINEL, morning brief"</td>
+        <td><span class="auto-no">✗ Manual trigger</span></td>
+        <td>Chat (V reads, acts)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-dim);">7</td>
+        <td style="color:var(--text);">Weekly synthesis</td>
+        <td style="color:var(--text-dim);">V types "SENTINEL, weekly synthesis"</td>
+        <td><span class="auto-no">✗ Manual trigger</span></td>
+        <td>Chat → V pastes to 01 Brain Dumps/</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title" style="margin-top: 24px;">Next Automation Opportunities (FORGE-ready)</div>
+  <table>
+    <thead>
+      <tr><th>Opportunity</th><th>What it does</th><th>Effort</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--text);">Obsidian MCP Server</td>
+        <td style="color:var(--text-dim);">Claude writes directly to Obsidian vault — no more manual pasting</td>
+        <td><span style="color: var(--orange);">Medium — needs MCP server build</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text);">Morning brief push</td>
+        <td style="color:var(--text-dim);">8am Telegram message auto-sends today's orders — SENTINEL brief without you initiating</td>
+        <td><span style="color: var(--green);">Easy — add to scheduled tasks</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text);">Statement auto-parse</td>
+        <td style="color:var(--text-dim);">Photo → Telegram → PHOENIX analysis auto-triggered → result in Obsidian</td>
+        <td><span style="color: var(--orange);">Medium — needs vision + Claude API integration</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text);">Weekly digest email</td>
+        <td style="color:var(--text-dim);">Sunday: all 8pm NLM outputs from the week compiled into one email digest</td>
+        <td><span style="color: var(--green);">Easy — FORGE can build in 30 mins</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${name}')"]`).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>

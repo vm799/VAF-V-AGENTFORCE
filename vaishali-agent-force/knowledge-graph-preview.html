@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaishali Command Center — Knowledge Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0f1117; color: #e2e8f0; font-family: 'Inter', sans-serif; overflow: hidden; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+.toolbar {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  border-bottom: 1px solid #1e293b; background: #161b22; flex-wrap: wrap;
+}
+.toolbar h1 { font-size: 1rem; font-weight: 700; color: #2dd4bf; margin-right: 8px; }
+.search-box {
+  position: relative; flex: 0 0 240px;
+}
+.search-box input {
+  width: 100%; padding: 7px 10px 7px 28px; border-radius: 6px;
+  border: 1px solid #334155; background: #0f1117; color: #e2e8f0;
+  font-size: 0.75rem; font-family: inherit; outline: none;
+}
+.search-box input:focus { border-color: #2dd4bf; }
+.search-box .icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 12px; pointer-events: none; }
+.pills { display: flex; gap: 4px; flex-wrap: wrap; }
+.pill {
+  padding: 3px 10px; border-radius: 12px; border: 1px solid #1e293b;
+  background: transparent; color: #64748b; font-size: 0.625rem;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
+}
+.pill.active { border-color: #2dd4bf60; background: #1c2333; color: #e2e8f0; }
+.pill.clear { border: none; background: #f8717120; color: #f87171; }
+.stats { margin-left: auto; font-size: 0.625rem; color: #64748b; }
+
+.main { display: flex; flex: 1; position: relative; overflow: hidden; }
+canvas { display: block; cursor: grab; }
+canvas.grabbing { cursor: grabbing; }
+
+.detail-panel {
+  width: 280px; background: #1c2333; border-left: 1px solid #1e293b;
+  padding: 16px; overflow-y: auto; transition: width 0.2s;
+}
+.detail-panel.hidden { width: 0; padding: 0; overflow: hidden; }
+.detail-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.close-btn { background: none; border: none; color: #64748b; cursor: pointer; font-size: 16px; font-family: inherit; }
+.detail-title { font-size: 1rem; font-weight: 600; margin: 0 0 3px; }
+.detail-type { font-size: 0.625rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px; }
+.detail-desc { font-size: 0.875rem; color: #94a3b8; line-height: 1.5; margin: 0 0 12px; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.stat-box { padding: 8px; background: #161b22; border-radius: 6px; text-align: center; }
+.stat-label { font-size: 0.625rem; color: #64748b; }
+.stat-value { font-size: 1rem; font-weight: 600; margin-top: 2px; }
+.conn-label { font-size: 0.625rem; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 6px; }
+.conn-item {
+  padding: 6px 8px; background: #161b22; border-radius: 6px; margin-bottom: 4px;
+  cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s;
+}
+.conn-item:hover { background: #21293a; }
+.conn-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.conn-name { font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conn-rel { font-size: 0.625rem; color: #64748b; }
+
+.tooltip {
+  position: fixed; padding: 8px 12px; background: #1c2333; border-radius: 8px;
+  pointer-events: none; z-index: 300; max-width: 260px;
+  box-shadow: 0 4px 20px rgba(15,17,23,0.8);
+}
+.tooltip-title { font-weight: 600; margin: 0 0 2px; }
+.tooltip-type { font-size: 0.625rem; color: #64748b; margin: 0; }
+.tooltip-desc { font-size: 0.625rem; color: #94a3b8; margin: 4px 0 0; }
+
+.help-text {
+  position: absolute; bottom: 8px; left: 12px; font-size: 0.625rem; color: #64748b; pointer-events: none;
+}
+.zoom-text {
+  position: absolute; bottom: 8px; right: 12px; font-size: 0.625rem; color: #64748b; pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="toolbar">
+    <h1>Knowledge Graph</h1>
+    <div class="search-box">
+      <span class="icon">⌕</span>
+      <input id="search" type="text" placeholder="Search nodes…">
+    </div>
+    <div class="pills" id="filters"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="main">
+    <div style="flex:1;position:relative" id="canvas-wrap">
+      <canvas id="graph"></canvas>
+      <div class="help-text">Scroll to zoom · Drag to pan · Click node to inspect · Double-click to focus</div>
+      <div class="zoom-text" id="zoom-label">100%</div>
+    </div>
+    <div class="detail-panel hidden" id="detail"></div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip" style="display:none"></div>
+
+<script>
+const GRAPH_DATA = {"nodes": [{"id": "finance", "label": "Finance", "type": "agent", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "icon": "pound", "size": 36, "importance": 10, "description": "Finance agent \u2014 central hub", "connections": 7}, {"id": "content", "label": "Content", "type": "agent", "category": "content", "colour": "#a78bfa", "glow": "#a78bfa60", "icon": "pen", "size": 36, "importance": 10, "description": "Content agent \u2014 central hub", "connections": 6}, {"id": "education", "label": "Education", "type": "agent", "category": "education", "colour": "#60a5fa", "glow": "#60a5fa60", "icon": "book", "size": 36, "importance": 10, "description": "Education agent \u2014 central hub", "connections": 2}, {"id": "research", "label": "Research", "type": "agent", "category": "research", "colour": "#38bdf8", "glow": "#38bdf860", "icon": "flask", "size": 36, "importance": 10, "description": "Research agent \u2014 central hub", "connections": 1}, {"id": "health", "label": "Health", "type": "agent", "category": "health", "colour": "#fb923c", "glow": "#fb923c60", "icon": "heart", "size": 36, "importance": 10, "description": "Health agent \u2014 central hub", "connections": 5}, {"id": "fin:recurring", "label": "Recurring (20)", "type": "metric", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "size": 16, "importance": 6, "description": "20 recurring payments detected", "connections": 1}, {"id": "fin:TESCO STORES", "label": "TESCO STORES", "type": "anomaly", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "size": 14, "importance": 4, "description": "\u00a382.37 \u2014 New merchant (first time seen)", "connections": 1}, {"id": "fin:SHELL FUEL", "label": "SHELL FUEL", "type": "anomaly", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "size": 14, "importance": 4, "description": "\u00a373.21 \u2014 New merchant (first time seen)", "connections": 1}, {"id": "fin:JOHN LEWIS", "label": "JOHN LEWIS", "type": "anomaly", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "size": 14, "importance": 4, "description": "\u00a359.36 \u2014 New merchant (first time seen)", "connections": 1}, {"id": "fin:SALARY CREDIT", "label": "SALARY CREDIT", "type": "anomaly", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "size": 18, "importance": 8, "description": "\u00a33,450.00 \u2014 Large transaction (\u00a33450.00)", "connections": 1}, {"id": "fin:TESCO BANK MORTGAGE", "label": "TESCO BANK MORTGAGE", "type": "anomaly", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "size": 18, "importance": 8, "description": "\u00a3875.00 \u2014 Large transaction (\u00a3875.00)", "connections": 1}, {"id": "fin:acc:first-direct-current", "label": "\u00a31,534", "type": "metric", "category": "finance", "colour": "#4ade80", "glow": "#4ade8060", "size": 20, "importance": 7, "description": "first-direct-current: \u00a31,534.37 (7d: \u00a3-294.42)", "connections": 1}, {"id": "idea:a1b2c3d4", "label": "How I built a personal AI ag", "type": "idea", "category": "content", "colour": "#a78bfa", "glow": "#a78bfa60", "size": 18, "importance": 8, "description": "linkedin \u00b7 LinkedIn \u00b7 Impact 8/10", "connections": 1}, {"id": "idea:m3n4o5p6", "label": "Building a personal knowledg", "type": "idea", "category": "content", "colour": "#a78bfa", "glow": "#a78bfa60", "size": 19, "importance": 9, "description": "long_form \u00b7 Blog / Medium \u00b7 Impact 9/10", "connections": 1}, {"id": "idea:q7r8s9t0", "label": "The CFO Dashboard: How I tra", "type": "idea", "category": "content", "colour": "#a78bfa", "glow": "#a78bfa60", "size": 19, "importance": 9, "description": "video_script \u00b7 YouTube \u00b7 Impact 9/10", "connections": 1}, {"id": "draft:i9j0k1l2", "label": "Review: Quick tip: Automatin", "type": "draft", "category": "content", "colour": "#fbbf24", "glow": "#fbbf2440", "size": 14, "importance": 7, "description": "Draft waiting review: Quick tip: Automating bank statement parsing with Python", "connections": 1}, {"id": "health:movement", "label": "Steps & Workout (9)", "type": "metric", "category": "health", "colour": "#fb923c", "glow": "#fb923c60", "size": 18.7, "importance": 8.7, "description": "3,659 steps \u00b7 60min workout", "connections": 1}, {"id": "health:sleep", "label": "Sleep (8)", "type": "metric", "category": "health", "colour": "#fb923c", "glow": "#fb923c60", "size": 18.4, "importance": 8.4, "description": "8.3h sleep \u00b7 HR 72bpm", "connections": 1}, {"id": "health:habits", "label": "Habits (5)", "type": "metric", "category": "health", "colour": "#fb923c", "glow": "#fb923c60", "size": 15.0, "importance": 5.0, "description": "2/4 habits \u00b7 50% rate", "connections": 1}, {"id": "health:body_score", "label": "Body 7.7/10", "type": "score", "category": "health", "colour": "#fb923c", "glow": "#fb923c60", "size": 22, "importance": 9, "description": "Keep energy up with a short break and some movement this afternoon.", "connections": 1}], "edges": [{"id": "finance->fin:recurring", "source": "finance", "target": "fin:recurring", "relation": "recurring", "weight": 0.6}, {"id": "finance->fin:TESCO STORES", "source": "finance", "target": "fin:TESCO STORES", "relation": "anomaly", "weight": 0.6}, {"id": "finance->fin:SHELL FUEL", "source": "finance", "target": "fin:SHELL FUEL", "relation": "anomaly", "weight": 0.6}, {"id": "finance->fin:JOHN LEWIS", "source": "finance", "target": "fin:JOHN LEWIS", "relation": "anomaly", "weight": 0.6}, {"id": "finance->fin:SALARY CREDIT", "source": "finance", "target": "fin:SALARY CREDIT", "relation": "anomaly", "weight": 0.6}, {"id": "finance->fin:TESCO BANK MORTGAGE", "source": "finance", "target": "fin:TESCO BANK MORTGAGE", "relation": "anomaly", "weight": 0.6}, {"id": "finance->fin:acc:first-direct-current", "source": "finance", "target": "fin:acc:first-direct-current", "relation": "balance", "weight": 0.8}, {"id": "content->idea:a1b2c3d4", "source": "content", "target": "idea:a1b2c3d4", "relation": "idea", "weight": 0.8}, {"id": "content->idea:m3n4o5p6", "source": "content", "target": "idea:m3n4o5p6", "relation": "idea", "weight": 0.8}, {"id": "content->idea:q7r8s9t0", "source": "content", "target": "idea:q7r8s9t0", "relation": "idea", "weight": 0.8}, {"id": "content->draft:i9j0k1l2", "source": "content", "target": "draft:i9j0k1l2", "relation": "review", "weight": 0.9}, {"id": "health->health:movement", "source": "health", "target": "health:movement", "relation": "metric", "weight": 0.9}, {"id": "health->health:sleep", "source": "health", "target": "health:sleep", "relation": "metric", "weight": 0.9}, {"id": "health->health:habits", "source": "health", "target": "health:habits", "relation": "metric", "weight": 0.9}, {"id": "health->health:body_score", "source": "health", "target": "health:body_score", "relation": "score", "weight": 1.0}, {"id": "education->research", "source": "education", "target": "research", "relation": "feeds", "weight": 0.3}, {"id": "education->content", "source": "education", "target": "content", "relation": "inspires", "weight": 0.3}, {"id": "health->content", "source": "health", "target": "content", "relation": "context", "weight": 0.2}], "node_types": ["agent", "anomaly", "draft", "idea", "metric", "score"], "date": "2026-03-21", "stats": {"total_nodes": 20, "total_edges": 18}};
+
+/* ── Config ──────────────────────────────────────────────────────── */
+const SIM_ITERS = 400, REPULSION = 1400, ATTRACT = 0.004, CENTER = 0.008, DAMP = 0.88;
+const MIN_ZOOM = 0.3, MAX_ZOOM = 4;
+
+const TYPE_META = {
+  agent:        { label: 'Agents',        shape: 'circle' },
+  topic:        { label: 'Topics',        shape: 'circle' },
+  entity:       { label: 'Entities',      shape: 'diamond' },
+  metric:       { label: 'Metrics',       shape: 'hex' },
+  anomaly:      { label: 'Anomalies',     shape: 'diamond' },
+  idea:         { label: 'Ideas',         shape: 'circle' },
+  draft:        { label: 'Drafts',        shape: 'diamond' },
+  score:        { label: 'Scores',        shape: 'hex' },
+  research_job: { label: 'Research Jobs', shape: 'circle' },
+};
+
+const AGENT_ICONS = { finance: '£', content: '✎', education: '▮', research: '◈', health: '♥' };
+
+/* ── Helpers ──────────────────────────────────────────────────────── */
+function hexToRgb(h) { const c = h.replace('#',''); return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)]; }
+function rgba(hex, a) { const [r,g,b] = hexToRgb(hex); return `rgba(${r},${g},${b},${a})`; }
+
+/* ── State ───────────────────────────────────────────────────────── */
+const canvas = document.getElementById('graph');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('canvas-wrap');
+
+let W, H;
+function resize() {
+  const r = wrap.getBoundingClientRect();
+  W = r.width; H = r.height;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  canvas.width = W * 2; canvas.height = H * 2;
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+}
+resize();
+window.addEventListener('resize', () => { resize(); });
+
+// Initialise nodes
+const nodes = GRAPH_DATA.nodes.map(n => ({
+  ...n,
+  x: W/2 + (Math.random()-0.5)*W*0.5,
+  y: H/2 + (Math.random()-0.5)*H*0.5,
+  vx: 0, vy: 0, pinned: false,
+}));
+const edges = GRAPH_DATA.edges.map((e, i) => ({ ...e, id: e.id || 'e'+i }));
+const nodeMap = new Map(nodes.map(n => [n.id, n]));
+
+let camera = { x: 0, y: 0, zoom: 1 };
+let tick = 0;
+let selectedId = null, hoveredId = null;
+let searchQ = '';
+let activeFilters = new Set();
+let drag = { node: null, ox: 0, oy: 0, isPan: false };
+
+// Stats
+document.getElementById('stats').textContent = `${nodes.length} nodes · ${edges.length} edges`;
+
+// Build filter pills
+const filtersEl = document.getElementById('filters');
+const types = [...new Set(nodes.map(n => n.type))].sort();
+types.forEach(t => {
+  const btn = document.createElement('button');
+  btn.className = 'pill active';
+  btn.textContent = (TYPE_META[t]||{}).label || t;
+  btn.dataset.type = t;
+  btn.addEventListener('click', () => {
+    if (activeFilters.has(t)) { activeFilters.delete(t); btn.classList.add('active'); }
+    else { activeFilters.add(t); btn.classList.remove('active'); }
+    // If all filtered out, clear
+    if (activeFilters.size === types.length) { activeFilters.clear(); document.querySelectorAll('.pill').forEach(p => p.classList.add('active')); }
+  });
+  filtersEl.appendChild(btn);
+});
+
+// Search
+document.getElementById('search').addEventListener('input', e => { searchQ = e.target.value.toLowerCase(); });
+
+/* ── Simulation ──────────────────────────────────────────────────── */
+function simulate() {
+  if (tick > SIM_ITERS) return;
+  tick++;
+  const a = Math.max(0, 1 - tick/SIM_ITERS);
+  const rep = REPULSION*a, att = ATTRACT*a, cen = CENTER*a;
+
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].pinned) continue;
+    for (let j = i+1; j < nodes.length; j++) {
+      const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
+      const dist = Math.max(Math.sqrt(dx*dx+dy*dy), 0.1);
+      const f = rep / (dist*dist);
+      const fx = dx/dist*f, fy = dy/dist*f;
+      if (!nodes[i].pinned) { nodes[i].vx -= fx; nodes[i].vy -= fy; }
+      if (!nodes[j].pinned) { nodes[j].vx += fx; nodes[j].vy += fy; }
+    }
+  }
+  for (const e of edges) {
+    const s = nodeMap.get(e.source), t = nodeMap.get(e.target);
+    if (!s||!t) continue;
+    const dx = t.x-s.x, dy = t.y-s.y, dist = Math.sqrt(dx*dx+dy*dy);
+    const ideal = (s.type==='agent'||t.type==='agent') ? 100 : 70;
+    const f = (dist-ideal)*att;
+    if (!s.pinned) { s.vx += dx*f; s.vy += dy*f; }
+    if (!t.pinned) { t.vx -= dx*f; t.vy -= dy*f; }
+  }
+  for (const n of nodes) {
+    if (n.pinned) continue;
+    const str = n.type==='agent' ? cen*2 : cen;
+    n.vx += (W/2-n.x)*str; n.vy += (H/2-n.y)*str;
+    n.vx *= DAMP; n.vy *= DAMP;
+    n.x += n.vx; n.y += n.vy;
+  }
+}
+
+function radius(n) { return Math.max(n.size * (n.type==='agent'?1:0.55), 5); }
+function visible(n) { return activeFilters.size===0 || !activeFilters.has(n.type); }
+function highlighted(n) { return searchQ && (n.label.toLowerCase().includes(searchQ) || (n.description||'').toLowerCase().includes(searchQ)); }
+function connectedToSel(n) {
+  if (!selectedId) return false;
+  return edges.some(e => (e.source===selectedId && e.target===n.id) || (e.target===selectedId && e.source===n.id));
+}
+
+/* ── Drawing ─────────────────────────────────────────────────────── */
+function draw() {
+  const c = ctx, cam = camera, hasSrch = searchQ.length>0;
+  c.clearRect(0,0,W,H);
+
+  // BG gradient
+  const bg = c.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.6);
+  bg.addColorStop(0,'#131826'); bg.addColorStop(1,'#0f1117');
+  c.fillStyle = bg; c.fillRect(0,0,W,H);
+
+  c.save();
+  c.translate(W/2,H/2); c.scale(cam.zoom,cam.zoom); c.translate(-W/2+cam.x, -H/2+cam.y);
+
+  // Edges
+  for (const e of edges) {
+    const s=nodeMap.get(e.source), t=nodeMap.get(e.target);
+    if (!s||!t||!visible(s)||!visible(t)) continue;
+    const isAct = selectedId && (e.source===selectedId||e.target===selectedId);
+    const isSrch = hasSrch && (highlighted(s)||highlighted(t));
+    const dim = (selectedId&&!isAct) || (hasSrch&&!isSrch);
+    const alpha = dim?0.04 : isAct?0.6 : 0.12+e.weight*0.12;
+    const lw = isAct ? 1.5+e.weight : 0.5+e.weight*0.5;
+    c.beginPath(); c.moveTo(s.x,s.y); c.lineTo(t.x,t.y);
+    c.strokeStyle = rgba(s.colour, alpha); c.lineWidth = lw; c.stroke();
+
+    // Particles on active edges
+    if (isAct) {
+      const pt = (Date.now()%3000)/3000;
+      c.beginPath(); c.arc(s.x+(t.x-s.x)*pt, s.y+(t.y-s.y)*pt, 2, 0, Math.PI*2);
+      c.fillStyle = rgba(s.colour, 0.8); c.fill();
+    }
+    // Edge label on active
+    if (isAct && e.relation) {
+      c.font = '9px Inter,sans-serif'; c.fillStyle = rgba(s.colour,0.6); c.textAlign='center';
+      c.fillText(e.relation, (s.x+t.x)/2, (s.y+t.y)/2-4);
+    }
+  }
+
+  // Nodes (agents on top)
+  const sorted = [...nodes].sort((a,b) => (a.type==='agent'?1:0)-(b.type==='agent'?1:0));
+  for (const n of sorted) {
+    if (!visible(n)) continue;
+    const r = radius(n);
+    const isSel = n.id===selectedId, isHov = n.id===hoveredId;
+    const isConn = connectedToSel(n), isSrch = hasSrch && highlighted(n);
+    const dim = (selectedId&&!isSel&&!isConn) || (hasSrch&&!isSrch);
+    const emph = isSel||isHov;
+    const alpha = dim?0.2:1;
+
+    // Glow
+    if (emph || n.type==='agent') {
+      const gr = r*(emph?3.5:2.2);
+      const gg = c.createRadialGradient(n.x,n.y,r*0.5,n.x,n.y,gr);
+      gg.addColorStop(0, rgba(n.colour, emph?0.35:dim?0.03:0.12));
+      gg.addColorStop(1, rgba(n.colour,0));
+      c.beginPath(); c.arc(n.x,n.y,gr,0,Math.PI*2); c.fillStyle=gg; c.fill();
+    }
+
+    // Search ring
+    if (isSrch) {
+      c.beginPath(); c.arc(n.x,n.y,r+5,0,Math.PI*2); c.strokeStyle='#fbbf24'; c.lineWidth=2; c.stroke();
+    }
+
+    // Shape
+    const shape = (TYPE_META[n.type]||{}).shape||'circle';
+    c.beginPath();
+    if (shape==='diamond') {
+      c.moveTo(n.x,n.y-r); c.lineTo(n.x+r,n.y); c.lineTo(n.x,n.y+r); c.lineTo(n.x-r,n.y); c.closePath();
+    } else if (shape==='hex') {
+      for (let i=0;i<6;i++) { const a=Math.PI/3*i-Math.PI/6; const hx=n.x+r*Math.cos(a),hy=n.y+r*Math.sin(a); i===0?c.moveTo(hx,hy):c.lineTo(hx,hy); } c.closePath();
+    } else {
+      c.arc(n.x,n.y,r,0,Math.PI*2);
+    }
+
+    const fg = c.createRadialGradient(n.x-r*0.3,n.y-r*0.3,0,n.x,n.y,r*1.2);
+    fg.addColorStop(0, rgba(n.colour,alpha)); fg.addColorStop(1, rgba(n.colour,alpha*0.6));
+    c.fillStyle=fg; c.fill();
+    if (emph) { c.strokeStyle='#fff'; c.lineWidth=2; c.stroke(); }
+    else if (!dim) { c.strokeStyle=rgba(n.colour,0.4); c.lineWidth=1; c.stroke(); }
+
+    // Agent icons
+    if (n.type==='agent') {
+      c.font = `bold ${r*0.7}px Inter,sans-serif`; c.fillStyle=rgba('#fff',alpha*0.9);
+      c.textAlign='center'; c.textBaseline='middle';
+      c.fillText(AGENT_ICONS[n.id]||'●', n.x, n.y+1);
+    }
+
+    // Label
+    c.font = `${emph?'bold ':''}${n.type==='agent'?11:9}px Inter,sans-serif`;
+    c.fillStyle = rgba('#e2e8f0', dim?0.15:emph?1:0.7);
+    c.textAlign='center'; c.textBaseline='top';
+    c.fillText(n.label.length>22?n.label.slice(0,20)+'…':n.label, n.x, n.y+r+4);
+  }
+
+  c.restore();
+  document.getElementById('zoom-label').textContent = Math.round(cam.zoom*100)+'%';
+}
+
+function loop() { simulate(); draw(); requestAnimationFrame(loop); }
+loop();
+
+/* ── Interaction ─────────────────────────────────────────────────── */
+function s2w(sx,sy) {
+  const w2=W/2,h2=H/2;
+  return { x:(sx-w2)/camera.zoom+w2-camera.x, y:(sy-h2)/camera.zoom+h2-camera.y };
+}
+function hitTest(mx,my) {
+  const {x,y}=s2w(mx,my);
+  for (let i=nodes.length-1;i>=0;i--) {
+    const n=nodes[i]; if(!visible(n))continue;
+    const r=radius(n)+4, dx=x-n.x, dy=y-n.y;
+    if(dx*dx+dy*dy<r*r) return n;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousedown', e => {
+  const r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const hit=hitTest(mx,my);
+  if(hit) { drag={node:hit,ox:mx,oy:my,isPan:false}; hit.pinned=true; tick=Math.min(tick,SIM_ITERS-50); }
+  else { drag={node:null,ox:mx,oy:my,isPan:true}; }
+});
+
+canvas.addEventListener('mousemove', e => {
+  const r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  if(drag.isPan) {
+    camera.x+=(mx-drag.ox)/camera.zoom; camera.y+=(my-drag.oy)/camera.zoom;
+    drag.ox=mx; drag.oy=my; canvas.className='grabbing'; return;
+  }
+  if(drag.node) {
+    const {x,y}=s2w(mx,my); drag.node.x=x; drag.node.y=y; drag.node.vx=0; drag.node.vy=0;
+    canvas.className='grabbing'; return;
+  }
+  const hit=hitTest(mx,my);
+  if(hit) {
+    canvas.style.cursor='pointer'; hoveredId=hit.id;
+    const tt=document.getElementById('tooltip');
+    tt.style.display='block'; tt.style.left=(e.clientX+14)+'px'; tt.style.top=(e.clientY-10)+'px';
+    tt.style.borderColor=hit.colour+'40';
+    tt.innerHTML = `<p class="tooltip-title" style="color:${hit.colour}">${hit.label}</p><p class="tooltip-type">${(TYPE_META[hit.type]||{}).label||hit.type}</p>${hit.description?`<p class="tooltip-desc">${hit.description}</p>`:''}`;
+  } else {
+    canvas.style.cursor='grab'; hoveredId=null;
+    document.getElementById('tooltip').style.display='none';
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  if(drag.node) drag.node.pinned=false;
+  drag={node:null,ox:0,oy:0,isPan:false}; canvas.style.cursor='grab';
+});
+
+canvas.addEventListener('click', e => {
+  const r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const hit=hitTest(mx,my);
+  if(hit) { selectedId=selectedId===hit.id?null:hit.id; showDetail(hit); }
+  else { selectedId=null; hideDetail(); }
+});
+
+canvas.addEventListener('dblclick', e => {
+  const r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const hit=hitTest(mx,my);
+  if(hit) { camera.zoom=2; camera.x=hit.x-W/2; camera.y=hit.y-H/2; selectedId=hit.id; showDetail(hit); }
+  else { camera={x:0,y:0,zoom:1}; selectedId=null; hideDetail(); }
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  camera.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, camera.zoom * (e.deltaY>0?0.92:1.08)));
+}, {passive:false});
+
+/* ── Detail panel ────────────────────────────────────────────────── */
+function showDetail(n) {
+  const d = document.getElementById('detail');
+  d.classList.remove('hidden');
+  const conns = edges.filter(e => e.source===n.id||e.target===n.id).slice(0,8);
+  d.innerHTML = `
+    <div class="detail-header">
+      <div class="dot" style="background:${n.colour};box-shadow:0 0 8px ${n.colour}"></div>
+      <button class="close-btn" onclick="selectedId=null;hideDetail()">×</button>
+    </div>
+    <h4 class="detail-title" style="color:${n.colour}">${n.label}</h4>
+    <p class="detail-type">${(TYPE_META[n.type]||{}).label||n.type} · ${n.category}</p>
+    ${n.description?`<p class="detail-desc">${n.description}</p>`:''}
+    <div class="stat-grid">
+      <div class="stat-box"><p class="stat-label">Importance</p><p class="stat-value">${n.importance}/10</p></div>
+      <div class="stat-box"><p class="stat-label">Connections</p><p class="stat-value">${n.connections||0}</p></div>
+    </div>
+    <p class="conn-label">Connections</p>
+    ${conns.map(e => {
+      const oid = e.source===n.id?e.target:e.source;
+      const o = nodeMap.get(oid);
+      if(!o) return '';
+      return `<div class="conn-item" onclick="selectedId='${o.id}';showDetail(nodeMap.get('${o.id}'))">
+        <div class="conn-dot" style="background:${o.colour}"></div>
+        <div><p class="conn-name">${o.label}</p><p class="conn-rel">${e.relation}</p></div>
+      </div>`;
+    }).join('')}
+  `;
+}
+function hideDetail() { document.getElementById('detail').classList.add('hidden'); }
+</script>
+</body>
+</html>

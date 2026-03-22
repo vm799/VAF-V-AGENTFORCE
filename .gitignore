@@ -1,0 +1,64 @@
+# ─── Secrets — NEVER commit ───────────────────────────────────────────────────
+.env
+.env.*
+*.pem
+*.key
+*.secret
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ─── Personal data — stays local ──────────────────────────────────────────────
+vaishali-agent-force/data/raw/
+vaishali-agent-force/data/finance/
+vaishali-agent-force/data/health/
+vaishali-agent-force/data/summaries/
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── Node / Frontend build artifacts ──────────────────────────────────────────
+node_modules/
+# Keep dist/ — it's the built dashboard, useful for deployment demos
+# frontend/dist/
+
+# ─── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+*.err
+
+# ─── LaunchAgent plists (machine-specific) ────────────────────────────────────
+macos/*.plist
+
+# ─── Tunnel / runtime state ───────────────────────────────────────────────────
+.tunnel_url
+.cache/
+
+# ─── Editor ───────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

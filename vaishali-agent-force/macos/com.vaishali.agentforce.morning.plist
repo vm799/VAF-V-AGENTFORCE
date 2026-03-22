@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.vaishali.agentforce.morning</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__VAF_PYTHON__</string>
+        <string>__VAF_PROJECT__/scripts/run_morning_briefing.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__VAF_PROJECT__</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>VAF_BASE_DIR</key>
+        <string>__VAF_PROJECT__</string>
+        <key>PYTHONPATH</key>
+        <string>__VAF_PROJECT__/src</string>
+    </dict>
+
+    <!-- Run at 07:00 every day -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>__VAF_PROJECT__/logs/morning.log</string>
+    <key>StandardErrorPath</key>
+    <string>__VAF_PROJECT__/logs/morning.err</string>
+
+    <!-- Run immediately if Mac was asleep during scheduled time -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>Nice</key>
+    <integer>10</integer>
+</dict>
+</plist>
