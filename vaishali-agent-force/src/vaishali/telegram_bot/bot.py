@@ -1853,7 +1853,7 @@ def create_bot(token: str, chat_id: int | None = None):
 
     # ── /save — Forward Claude Project output to Obsidian + Dashboard ──
     async def _handle_save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Save a Claude Project output drop.
+        """Save a Claude Project output drop — enriched by orchestrator.
 
         Usage:
           /save [optional title]
@@ -1861,9 +1861,10 @@ def create_bot(token: str, chat_id: int | None = None):
 
         OR just paste the full Claude response as text prefixed with /save.
 
-        The handler auto-detects the agent, writes to Obsidian, shows on dashboard.
+        The handler runs the full golden thread:
+          detect agent → orchestrator (Claude Haiku enrichment) → Obsidian → Dashboard
         """
-        from vaishali.captures.store import save_capture, detect_agent, VAULT_PATH_MAP
+        from vaishali.captures.store import save_capture
 
         # Get everything after /save
         full_text = update.message.text or ""
@@ -1888,22 +1889,29 @@ def create_bot(token: str, chat_id: int | None = None):
         title = header if (header and content_body) else None
 
         try:
-            capture = save_capture(content=content, title=title)
+            capture = save_capture(content=content, title=title, enrich=True)
             agent = capture["agent"]
             vault = capture["vault_path"]
             obsidian_ok = capture["obsidian_written"]
             revenue = capture["revenue_angle"]
+            signal = capture.get("signal_rating", "🟡")
+            is_enriched = capture.get("enriched", 0)
+            summary = capture.get("summary", "")
 
             obsidian_icon = "🟢 Written to Obsidian" if obsidian_ok else "🟡 Saved to SQLite (Obsidian vault not reachable)"
+            enriched_icon = "🧠 Enriched by orchestrator" if is_enriched else "⚡ Quick save (no LLM)"
 
-            await update.message.reply_text(
-                f"✅ <b>Captured → {_e(agent)}</b>\n\n"
+            msg = (
+                f"✅ <b>Captured → {_e(agent)}</b> {signal}\n\n"
+                f"{enriched_icon}\n"
                 f"📁 <code>{_e(vault)}</code>\n"
                 f"{obsidian_icon}\n"
-                f"📊 Visible on Dashboard → /api/captures\n\n"
-                f"{_e(revenue)}",
-                parse_mode=PARSE,
             )
+            if summary and is_enriched:
+                msg += f"\n📋 <i>{_e(summary[:200])}</i>\n"
+            msg += f"\n{_e(revenue)}"
+
+            await update.message.reply_text(msg, parse_mode=PARSE)
         except Exception as exc:
             log.exception("Save capture failed: %s", exc)
             await update.message.reply_text(
@@ -1912,6 +1920,52 @@ def create_bot(token: str, chat_id: int | None = None):
             )
 
     application.add_handler(CommandHandler("save", _handle_save))
+
+    # ── /quick — Fast save without LLM enrichment ──
+    async def _handle_quick_save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Quick save — no LLM enrichment, just detect agent + store.
+        /quick [content]
+        """
+        from vaishali.captures.store import save_capture_quick
+
+        full_text = update.message.text or ""
+        content = full_text.replace("/quick", "").strip()
+        if not content and update.message.reply_to_message:
+            content = update.message.reply_to_message.text or ""
+        if not content:
+            await update.message.reply_text(
+                "⚡ <b>QUICK SAVE</b>\n\n<code>/quick [content]</code> — saves without LLM enrichment",
+                parse_mode=PARSE,
+            )
+            return
+
+        try:
+            capture = save_capture_quick(content=content)
+            await update.message.reply_text(
+                f"⚡ <b>Quick saved → {_e(capture['agent'])}</b>\n"
+                f"📁 <code>{_e(capture['vault_path'])}</code>",
+                parse_mode=PARSE,
+            )
+        except Exception as exc:
+            await update.message.reply_text(f"❌ Quick save failed: {_e(str(exc))}", parse_mode=PARSE)
+
+    application.add_handler(CommandHandler("quick", _handle_quick_save))
+
+    # ── /weekly — Sunday evening intelligence brief ──
+    async def _handle_weekly(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Weekly intelligence brief — top insights, patterns, and actions."""
+        from vaishali.insights.engine import generate_weekly_brief
+        try:
+            brief = generate_weekly_brief()
+            await update.message.reply_text(brief, parse_mode=PARSE)
+        except Exception as exc:
+            log.exception("Weekly brief failed: %s", exc)
+            await update.message.reply_text(
+                f"❌ Weekly brief failed: {_e(str(exc))}",
+                parse_mode=PARSE,
+            )
+
+    application.add_handler(CommandHandler("weekly", _handle_weekly))
 
     # /captures — quick summary of recent saves
     async def _handle_captures(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

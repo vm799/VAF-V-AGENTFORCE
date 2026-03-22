@@ -1,17 +1,25 @@
 """Dashboard backend API — FastAPI app serving agent summaries and commands.
 
 Routes are mounted under /api so the React SPA can be served from root.
+
+Golden thread endpoints:
+  POST /api/capture          — enriched capture (orchestrator + Obsidian)
+  POST /api/capture/quick    — fast capture (no LLM, just detect + save)
+  GET  /api/captures         — list recent captures
+  GET  /api/captures/stats   — aggregate capture intelligence
+  GET  /api/captures/must-act — 🟢 must-act items requiring action
 """
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -28,8 +36,8 @@ log = get_logger(__name__)
 
 app = FastAPI(
     title="Vaishali Agent Force",
-    description="Command Center dashboard API",
-    version="0.1.0",
+    description="Command Center dashboard API — the golden thread surfaces here",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -43,13 +51,43 @@ app.add_middleware(
 api = APIRouter(prefix="/api")
 
 
+# ── Auth ──────────────────────────────────────────────────────────────
+
+_CAPTURE_API_KEY = os.environ.get("VAF_CAPTURE_API_KEY", "")
+
+
+def _verify_api_key(authorization: str | None = Header(None)) -> bool:
+    """Verify Bearer token for external capture endpoints (iOS Shortcut).
+
+    If no VAF_CAPTURE_API_KEY is set in env, auth is disabled (local-only mode).
+    """
+    if not _CAPTURE_API_KEY:
+        return True  # No key configured = local development mode
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid auth format — use: Bearer <token>")
+    token = authorization.removeprefix("Bearer ").strip()
+    if token != _CAPTURE_API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API key")
+    return True
+
+
 # ── Models ─────────────────────────────────────────────────────────────
 
 class CommandRequest(BaseModel):
     command: str  # "morning", "evening", "ingest", "where_are_we"
 
 
-# ── API Routes ─────────────────────────────────────────────────────────
+class CaptureRequest(BaseModel):
+    content: str
+    title: str | None = None
+    agent: str | None = None
+    source_url: str | None = None
+    tags: list[str] | None = None
+
+
+# ── Status + Summary Routes ───────────────────────────────────────────
 
 @api.get("/status")
 def get_status() -> dict[str, Any]:
@@ -106,7 +144,7 @@ def braindump_thoughts() -> dict[str, Any]:
     """Return all braindump thoughts (recent first)."""
     from vaishali.braindump.storage import get_active_actions, get_stats, load_thoughts
     thoughts = load_thoughts()
-    thoughts.reverse()  # newest first
+    thoughts.reverse()
     return {
         "thoughts": [t.to_dict() for t in thoughts[:50]],
         "stats": get_stats(),
@@ -114,15 +152,16 @@ def braindump_thoughts() -> dict[str, Any]:
     }
 
 
+# ── Briefings ─────────────────────────────────────────────────────────
+
 @api.get("/briefings/today")
 def briefing_today() -> dict[str, Any]:
-    """Today's unified briefing — returns empty skeleton if no briefing run yet."""
+    """Today's unified briefing."""
     import json
 
     today = date.today()
     path = settings.briefings_dir / f"{today.isoformat()}.json"
     if not path.exists():
-        # Try yesterday's briefing as fallback so the dashboard always has data
         yesterday = settings.briefings_dir / f"{(today.replace(day=today.day - 1)).isoformat()}.json"
         if yesterday.exists():
             data = json.loads(yesterday.read_text(encoding="utf-8"))
@@ -141,11 +180,7 @@ def briefing_today() -> dict[str, Any]:
 
 @api.get("/insights")
 def get_insights(limit: int = 20) -> dict[str, Any]:
-    """Recent Claude-extracted insights from dropped links.
-
-    Each insight has: title, url, summary, key_insights, key_topics,
-    action_items, quality_score, created_at.
-    """
+    """Recent Claude-extracted insights from dropped links."""
     from vaishali.education.insight_writer import load_recent_insights
     items = load_recent_insights(limit=limit)
     return {"insights": items, "total": len(items)}
@@ -159,31 +194,23 @@ def get_graph() -> dict[str, Any]:
 
 @api.get("/urls")
 def get_urls() -> dict[str, Any]:
-    """All queued / processed URLs with NLM status.
-
-    Returns items newest-first. Each entry includes:
-      id, url, title, category, status, queued_at, nlm_summary, error
-    """
+    """All queued / processed URLs."""
     from vaishali.education.url_queue import get_all
-    items = get_all()  # already sorted newest-first
+    items = get_all()
     total = len(items)
     pending = sum(1 for i in items if i.get("status") == "pending")
     done = sum(1 for i in items if i.get("status") == "done")
     failed = sum(1 for i in items if i.get("status") == "failed")
-    return {
-        "urls": items,
-        "total": total,
-        "pending": pending,
-        "done": done,
-        "failed": failed,
-    }
+    return {"urls": items, "total": total, "pending": pending, "done": done, "failed": failed}
 
+
+# ── Captures (Golden Thread) ─────────────────────────────────────────
 
 @api.get("/captures")
-def get_captures(limit: int = 50) -> dict[str, Any]:
-    """Recent Claude Project captures — drops saved via /save or POST /api/capture."""
-    from vaishali.captures.store import get_captures as _get
-    items = _get(limit=limit)
+def get_captures_endpoint(limit: int = 50) -> dict[str, Any]:
+    """Recent captures — the intelligence feed."""
+    from vaishali.captures.store import get_captures
+    items = get_captures(limit=limit)
     return {
         "captures": items,
         "total": len(items),
@@ -191,21 +218,54 @@ def get_captures(limit: int = 50) -> dict[str, Any]:
     }
 
 
-class CaptureRequest(BaseModel):
-    content: str
-    title: str | None = None
-    agent: str | None = None     # override auto-detection
-    source_url: str | None = None
-    tags: list[str] | None = None
+@api.get("/captures/stats")
+def get_captures_stats() -> dict[str, Any]:
+    """Aggregate capture intelligence for dashboard cards."""
+    from vaishali.captures.store import get_capture_stats
+    return get_capture_stats()
+
+
+@api.get("/captures/must-act")
+def get_must_act() -> dict[str, Any]:
+    """Items rated 🟢 must-act — requires V's attention within 48hrs."""
+    from vaishali.captures.store import get_must_act_captures
+    items = get_must_act_captures(limit=10)
+    return {"captures": items, "total": len(items)}
+
+
+@api.get("/insights/weekly")
+def get_weekly_insights_endpoint(days: int = 7) -> dict[str, Any]:
+    """Weekly intelligence — themes, connections, revenue ops, Goggins trend."""
+    from vaishali.insights.engine import get_weekly_insights
+    return get_weekly_insights(days=days)
+
+
+@api.get("/captures/agent/{agent}")
+def get_captures_by_agent_endpoint(agent: str, limit: int = 20) -> dict[str, Any]:
+    """Captures filtered by agent."""
+    from vaishali.captures.store import get_captures_by_agent
+    items = get_captures_by_agent(agent, limit=limit)
+    return {"captures": items, "total": len(items), "agent": agent.upper()}
 
 
 @api.post("/capture")
-def create_capture(req: CaptureRequest) -> dict[str, Any]:
-    """Accept a Claude Project output drop — detect agent, save to SQLite + Obsidian.
+def create_capture(
+    req: CaptureRequest,
+    _auth: bool = Depends(_verify_api_key),
+) -> dict[str, Any]:
+    """Enriched capture — runs through orchestrator (LLM enrichment + URL fetch).
 
     Called by:
       - Telegram /save handler
-      - iOS Shortcut (future)
+      - iOS Shortcut (authenticated via Bearer token)
+      - Claude Mobile share sheet
+
+    The orchestrator:
+      1. Detects agent from content signals
+      2. Fetches URL if present (CIPHER URL processor)
+      3. Calls Claude Haiku with agent SKILL.md for structured enrichment
+      4. Writes enriched note to Obsidian vault
+      5. Stores in SQLite with signal rating + insights
     """
     from vaishali.captures.store import save_capture
     capture = save_capture(
@@ -214,9 +274,41 @@ def create_capture(req: CaptureRequest) -> dict[str, Any]:
         agent=req.agent,
         source_url=req.source_url,
         tags=req.tags,
+        enrich=True,
     )
     return {
         "status": "saved",
+        "enriched": bool(capture.get("enriched")),
+        "agent": capture["agent"],
+        "title": capture["title"],
+        "signal_rating": capture.get("signal_rating", "🟡"),
+        "vault_path": capture["vault_path"],
+        "obsidian_written": bool(capture["obsidian_written"]),
+        "revenue_angle": capture["revenue_angle"],
+        "summary": capture.get("summary", ""),
+    }
+
+
+@api.post("/capture/quick")
+def create_capture_quick(
+    req: CaptureRequest,
+    _auth: bool = Depends(_verify_api_key),
+) -> dict[str, Any]:
+    """Fast capture — no LLM enrichment, just detect agent + save.
+
+    Use when speed matters more than depth (e.g., rapid-fire brain dumps).
+    """
+    from vaishali.captures.store import save_capture_quick
+    capture = save_capture_quick(
+        content=req.content,
+        title=req.title,
+        agent=req.agent,
+        source_url=req.source_url,
+        tags=req.tags,
+    )
+    return {
+        "status": "saved",
+        "enriched": False,
         "agent": capture["agent"],
         "title": capture["title"],
         "vault_path": capture["vault_path"],
@@ -225,20 +317,12 @@ def create_capture(req: CaptureRequest) -> dict[str, Any]:
     }
 
 
-def _count_by_agent(items: list[dict]) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    for item in items:
-        a = item.get("agent", "UNKNOWN")
-        counts[a] = counts.get(a, 0) + 1
-    return counts
-
-
-# ── Goggins Non-Negotiables / Accountability endpoints ────────────────────────
+# ── Goggins Non-Negotiables / Accountability ─────────────────────────
 
 @api.get("/checkins")
 def get_checkins_endpoint(limit: int = 30) -> dict[str, Any]:
     """Return recent daily check-ins with streak + stats."""
-    from vaishali.checkins.store import get_checkins, get_streak, get_stats
+    from vaishali.checkins.store import get_stats
     stats = get_stats(days=limit)
     return {
         "streak": stats["streak"],
@@ -261,6 +345,8 @@ def get_today_checkin_endpoint() -> dict[str, Any]:
         "has_checkin": today is not None,
     }
 
+
+# ── Commands ──────────────────────────────────────────────────────────
 
 @api.post("/commands/run")
 def run_command(req: CommandRequest) -> dict[str, Any]:
@@ -287,7 +373,7 @@ def run_command(req: CommandRequest) -> dict[str, Any]:
             text=True,
             timeout=120,
             cwd=str(settings.base_dir),
-            env={**__import__("os").environ, "PYTHONPATH": str(settings.base_dir / "src")},
+            env={**os.environ, "PYTHONPATH": str(settings.base_dir / "src")},
         )
         return {
             "command": req.command,
@@ -303,7 +389,6 @@ def run_command(req: CommandRequest) -> dict[str, Any]:
 def speak_briefing() -> dict[str, Any]:
     """Load today's briefing and speak it aloud using macOS TTS."""
     from vaishali.dashboard.voice import speak_briefing_for_today
-
     try:
         result = speak_briefing_for_today()
         return {"status": "speaking", "duration_estimate": result.get("duration_estimate", "~5 minutes")}
@@ -311,17 +396,13 @@ def speak_briefing() -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ── Reports ───────────────────────────────────────────────────────────
+
 @api.get("/reports")
 def list_reports() -> dict[str, Any]:
-    """List all files in reports/ and data/briefings/ and data/summaries/ recursively.
-
-    Returns tree structure with metadata for each file.
-    """
-    import os
-
+    """List all report files."""
     result: dict[str, Any] = {"files": []}
 
-    # Define allowed base directories
     allowed_dirs = [
         settings.reports_dir,
         settings.briefings_dir,
@@ -330,72 +411,45 @@ def list_reports() -> dict[str, Any]:
     ]
 
     def get_file_type(path: Path) -> str:
-        """Determine preview type based on file extension."""
         suffix = path.suffix.lower()
-        type_map = {
-            ".md": "markdown",
-            ".json": "json",
-            ".csv": "csv",
-            ".txt": "text",
-            ".log": "text",
-            ".pdf": "pdf",
-        }
+        type_map = {".md": "markdown", ".json": "json", ".csv": "csv", ".txt": "text", ".log": "text", ".pdf": "pdf"}
         return type_map.get(suffix, "text")
 
     def scan_dir(base_path: Path, rel_prefix: str = "") -> None:
-        """Recursively scan directory and collect files."""
         if not base_path.exists():
             return
-
         try:
             for entry in sorted(base_path.iterdir()):
                 if entry.name.startswith("."):
                     continue
-
                 rel_path = f"{rel_prefix}/{entry.name}".lstrip("/")
-
                 if entry.is_file():
                     stat = entry.stat()
                     result["files"].append({
-                        "name": entry.name,
-                        "path": rel_path,
-                        "type": get_file_type(entry),
-                        "size": stat.st_size,
-                        "modified": stat.st_mtime,
+                        "name": entry.name, "path": rel_path,
+                        "type": get_file_type(entry), "size": stat.st_size, "modified": stat.st_mtime,
                     })
                 elif entry.is_dir():
                     scan_dir(entry, rel_path)
         except (PermissionError, OSError):
             pass
 
-    # Scan all allowed directories
     for base_dir in allowed_dirs:
         if base_dir.exists():
             scan_dir(base_dir)
-
     return result
 
 
 @api.get("/reports/content")
 def get_report_content(path: str) -> dict[str, Any]:
-    """Return the content of a report file as text.
-
-    path is relative to project base_dir.
-    Security: only allow paths under reports/, data/briefings/, data/summaries/, data/braindump/
-    """
-    # Security: prevent path traversal
+    """Return the content of a report file as text."""
     if ".." in path or path.startswith("/"):
         raise HTTPException(status_code=403, detail="Invalid path")
 
-    # Resolve full path
     full_path = settings.base_dir / path
-
-    # Verify path is within allowed directories
     allowed_dirs = [
-        settings.reports_dir,
-        settings.briefings_dir,
-        settings.data_dir / "summaries",
-        settings.data_dir / "braindump",
+        settings.reports_dir, settings.briefings_dir,
+        settings.data_dir / "summaries", settings.data_dir / "braindump",
     ]
 
     is_allowed = False
@@ -409,7 +463,6 @@ def get_report_content(path: str) -> dict[str, Any]:
 
     if not is_allowed:
         raise HTTPException(status_code=403, detail="Path not in allowed directories")
-
     if not full_path.exists() or not full_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
 
@@ -420,22 +473,9 @@ def get_report_content(path: str) -> dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
-    # Determine file type
     suffix = full_path.suffix.lower()
-    type_map = {
-        ".md": "markdown",
-        ".json": "json",
-        ".csv": "csv",
-        ".txt": "text",
-        ".log": "text",
-    }
-    file_type = type_map.get(suffix, "text")
-
-    return {
-        "content": content,
-        "type": file_type,
-        "path": str(full_path.relative_to(settings.base_dir)),
-    }
+    type_map = {".md": "markdown", ".json": "json", ".csv": "csv", ".txt": "text", ".log": "text"}
+    return {"content": content, "type": type_map.get(suffix, "text"), "path": str(full_path.relative_to(settings.base_dir))}
 
 
 # ── Helpers ────────────────────────────────────────────────────────────
@@ -443,16 +483,21 @@ def get_report_content(path: str) -> dict[str, Any]:
 def _get_today_summary(agent: str) -> dict[str, Any]:
     data = read_summary(agent, date.today())
     if data is None:
-        # Return empty skeleton — never 404 a live dashboard
         return {
-            "agent": agent,
-            "date": date.today().isoformat(),
-            "headline": f"No {agent} data yet",
-            "status": "idle",
+            "agent": agent, "date": date.today().isoformat(),
+            "headline": f"No {agent} data yet", "status": "idle",
             "summary": f"No {agent} summary for today. Trigger a briefing run to populate.",
             "_empty": True,
         }
     return data
+
+
+def _count_by_agent(items: list[dict]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in items:
+        a = item.get("agent", "UNKNOWN")
+        counts[a] = counts.get(a, 0) + 1
+    return counts
 
 
 # ── Mount API router ───────────────────────────────────────────────────
@@ -461,7 +506,6 @@ app.include_router(api)
 
 
 # ── Static file serving (built React frontend) ────────────────────────
-# Mounted AFTER API routes so /api/* is always handled by FastAPI.
 
 _frontend_dist = settings.base_dir / "frontend" / "dist"
 if _frontend_dist.exists() and (_frontend_dist / "index.html").exists():

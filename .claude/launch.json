@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vaf-backend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd '/Users/mcmehmios/V AgentForce/vaishali-agent-force' && VAF_BASE_DIR='$PWD' PYTHONPATH='$PWD/src' .venv/bin/python -m uvicorn vaishali.dashboard.api:app --host 0.0.0.0 --port 8077"
+      ],
+      "port": 8077
+    },
+    {
+      "name": "vaf-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/mcmehmios/V AgentForce/vaishali-agent-force/frontend", "run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "vaf-telegram-bot",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd '/Users/mcmehmios/V AgentForce/vaishali-agent-force' && VAF_BASE_DIR='$PWD' PYTHONPATH='$PWD/src' .venv/bin/python -m vaishali.telegram_bot.run"
+      ],
+      "port": 8080
+    }
+  ]
+}

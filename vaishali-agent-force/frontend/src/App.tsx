@@ -11,6 +11,7 @@ import { AgentStrip } from './components/AgentStrip';
 import { BraindumpPanel } from './components/BraindumpPanel';
 import { ReportsPanel } from './components/ReportsPanel';
 import { InsightsPanel } from './components/InsightsPanel';
+import { WeeklyInsightsPanel } from './components/WeeklyInsightsPanel';
 import { UrlQueuePanel } from './components/UrlQueuePanel';
 import { CapturesPanel } from './components/CapturesPanel';
 import { AccountabilityPanel } from './components/AccountabilityPanel';
@@ -135,12 +136,17 @@ export function App() {
           <AccountabilityPanel />
         </div>
 
+        {/* Weekly Intelligence — patterns, themes, cross-agent connections */}
+        <div style={{ marginTop: 20 }}>
+          <WeeklyInsightsPanel />
+        </div>
+
         {/* Captures Panel — intelligence drops from Claude Project */}
         <div style={{ marginTop: 20 }}>
           <CapturesPanel />
         </div>
 
-        {/* Insights Panel — full width, above reports */}
+        {/* Insights Panel — URL-extracted insights */}
         <div style={{ marginTop: 20 }}>
           <InsightsPanel />
         </div>
