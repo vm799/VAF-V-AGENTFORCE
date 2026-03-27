@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "vaf-memory": {
+      "command": "node",
+      "args": ["/Users/mcmehmios/repos/v-agentforce-architecture/mcp/src/index.js"],
+      "env": {
+        "OBSIDIAN_PATH": "/Users/mcmehmios/Desktop/SecondBrain/AgentForce",
+        "ENTERPRISE_REPO": "/Users/mcmehmios/repos/v-agentforce-architecture/enterprise",
+        "KB_TYPE": "obsidian"
+      }
+    }
+  }
+}

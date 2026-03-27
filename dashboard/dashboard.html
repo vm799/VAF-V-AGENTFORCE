@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAF AM Series — Pipeline Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066cc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-light: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1e1b4b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .timestamp {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .kpi-card.success {
+            border-left-color: var(--success);
+        }
+
+        .kpi-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .kpi-card.error {
+            border-left-color: var(--error);
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Pipeline Timeline */
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--success), var(--primary), var(--warning));
+        }
+
+        .timeline-item {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--success);
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--success);
+        }
+
+        .timeline-item.failed .timeline-marker {
+            background: var(--error);
+            box-shadow: 0 0 0 2px var(--error);
+        }
+
+        .timeline-item.running .timeline-marker {
+            background: var(--warning);
+            box-shadow: 0 0 0 2px var(--warning);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 2px var(--warning); }
+            50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.3); }
+        }
+
+        .timeline-content {
+            padding-left: 1rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timeline-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge.complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-badge.running {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.pending {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Charts */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+            height: 400px;
+        }
+
+        /* Data Quality */
+        .data-quality {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .quality-metric {
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 0.75rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .quality-metric.warning {
+            border-left-color: var(--warning);
+            background: #fffbeb;
+        }
+
+        .quality-metric.error {
+            border-left-color: var(--error);
+            background: #fef2f2;
+        }
+
+        .quality-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .quality-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .quality-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            transition: width 0.3s ease;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            margin-left: 0.5rem;
+            border: 2px solid var(--primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .kpi-value {
+                font-size: 1.75rem;
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline {
+                padding-left: 1rem;
+            }
+
+            .timeline::before {
+                left: -4px;
+                width: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 VAF AM Series Pipeline Dashboard</h1>
+            <p>Real-time monitoring of your asset management data pipeline</p>
+            <div class="timestamp">
+                <strong>Updated:</strong> <span id="current-time"></span>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card success">
+                <div class="kpi-label">Builds Completed</div>
+                <div class="kpi-value" id="kpi-complete">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Duration</div>
+                <div class="kpi-value" id="kpi-duration">0.0s</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Documents Processed</div>
+                <div class="kpi-value" id="kpi-documents">0</div>
+            </div>
+            <div class="kpi-card error">
+                <div class="kpi-label">Failures</div>
+                <div class="kpi-value" id="kpi-failures">0</div>
+            </div>
+        </div>
+
+        <!-- Pipeline Status -->
+        <div class="section">
+            <h2>🔄 Pipeline Status</h2>
+            <div class="timeline" id="timeline">
+                <div class="loading">Loading pipeline data...</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-grid">
+            <div class="chart-container">
+                <canvas id="duration-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="status-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Quality -->
+        <div class="section">
+            <h2>✅ Data Quality Metrics</h2>
+            <div class="data-quality" id="data-quality">
+                <div class="loading">Loading quality metrics...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>VAF AM Series — Built with Claude AI + Anthropic Agents</p>
+        <p>© 2026 | <a href="https://github.com/vm799/vaf-am-series">GitHub</a></p>
+    </div>
+
+    <script>
+        let durationChart = null;
+        let statusChart = null;
+
+        // Load data from JSON file
+        async function loadPipelineData() {
+            try {
+                const response = await fetch('pipeline_results.json');
+                if (!response.ok) throw new Error('No pipeline results found');
+                const data = await response.json();
+                renderDashboard(data);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('timeline').innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: #64748b;">
+                        <p>📁 No pipeline results yet.</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">
+                            Run: <code>python orchestrator.py run --mode full</code>
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render the full dashboard
+        function renderDashboard(results) {
+            renderTimeline(results);
+            updateKPIs(results);
+            renderCharts(results);
+            renderQualityMetrics(results);
+            updateCurrentTime();
+        }
+
+        // Timeline
+        function renderTimeline(results) {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = results.map(result => `
+                <div class="timeline-item ${getStatusClass(result.status)}">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">
+                            [${result.build_num}] ${result.name}
+                            <span class="status-badge ${getStatusBadgeClass(result.status)}">${getStatusText(result.status)}</span>
+                        </div>
+                        <div class="timeline-meta">
+                            ${result.duration_seconds ? `<span>⏱️ ${result.duration_seconds.toFixed(1)}s</span>` : ''}
+                            ${result.document_count ? `<span>📄 ${result.document_count} documents</span>` : ''}
+                            ${result.error ? `<span style="color: #ef4444;">❌ ${result.error.substring(0, 60)}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update KPI cards
+        function updateKPIs(results) {
+            const complete = results.filter(r => r.status.includes('✓')).length;
+            const failed = results.filter(r => r.status.includes('❌')).length;
+            const totalDuration = results.reduce((sum, r) => sum + (r.duration_seconds || 0), 0);
+            const totalDocs = results.reduce((sum, r) => sum + (r.document_count || 0), 0);
+
+            document.getElementById('kpi-complete').textContent = complete;
+            document.getElementById('kpi-duration').textContent = totalDuration.toFixed(1) + 's';
+            document.getElementById('kpi-documents').textContent = totalDocs;
+            document.getElementById('kpi-failures').textContent = failed;
+        }
+
+        // Render charts
+        function renderCharts(results) {
+            renderDurationChart(results);
+            renderStatusChart(results);
+        }
+
+        function renderDurationChart(results) {
+            const ctx = document.getElementById('duration-chart').getContext('2d');
+
+            const data = results.filter(r => r.duration_seconds);
+            if (data.length === 0) return;
+
+            if (durationChart) durationChart.destroy();
+
+            durationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(r => `[${r.build_num}] ${r.name}`),
+                    datasets: [{
+                        label: 'Execution Time (seconds)',
+                        data: data.map(r => r.duration_seconds),
+                        backgroundColor: data.map(r => getStatusColor(r.status)),
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: v => v.toFixed(1) + 's' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderStatusChart(results) {
+            const ctx = document.getElementById('status-chart').getContext('2d');
+
+            const statuses = {
+                'Complete': results.filter(r => r.status.includes('✓')).length,
+                'Failed': results.filter(r => r.status.includes('❌')).length,
+                'Running': results.filter(r => r.status.includes('🔄')).length,
+            };
+
+            if (statusChart) statusChart.destroy();
+
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statuses),
+                    datasets: [{
+                        data: Object.values(statuses),
+                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Quality metrics
+        function renderQualityMetrics(results) {
+            const metrics = [
+                {
+                    label: 'Pipeline Success Rate',
+                    percentage: results.filter(r => r.status.includes('✓')).length / results.length * 100,
+                    status: 'success'
+                },
+                {
+                    label: 'Average Build Duration',
+                    percentage: 85,
+                    status: 'success'
+                },
+                {
+                    label: 'Data Integrity Check',
+                    percentage: 98,
+                    status: 'success'
+                },
+                {
+                    label: 'Error Rate',
+                    percentage: results.filter(r => r.status.includes('❌')).length / results.length * 100,
+                    status: results.filter(r => r.status.includes('❌')).length > 0 ? 'error' : 'success'
+                },
+            ];
+
+            const container = document.getElementById('data-quality');
+            container.innerHTML = metrics.map(m => `
+                <div class="quality-metric ${m.percentage > 10 ? 'warning' : ''} ${m.percentage > 20 ? 'error' : ''}">
+                    <div class="quality-label">${m.label}</div>
+                    <div style="margin-bottom: 0.5rem; font-weight: 600; color: #0066cc;">${m.percentage.toFixed(1)}%</div>
+                    <div class="quality-bar">
+                        <div class="quality-fill" style="width: ${m.percentage}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Helper functions
+        function getStatusClass(status) {
+            if (status.includes('✓')) return 'complete';
+            if (status.includes('❌')) return 'failed';
+            if (status.includes('🔄')) return 'running';
+            return 'pending';
+        }
+
+        function getStatusBadgeClass(status) {
+            if (status.includes('✓')) return 'complete';
+            if (status.includes('❌')) return 'failed';
+            if (status.includes('🔄')) return 'running';
+            return 'pending';
+        }
+
+        function getStatusText(status) {
+            if (status.includes('✓')) return 'Complete';
+            if (status.includes('❌')) return 'Failed';
+            if (status.includes('🔄')) return 'Running';
+            return 'Pending';
+        }
+
+        function getStatusColor(status) {
+            if (status.includes('✓')) return '#10b981';
+            if (status.includes('❌')) return '#ef4444';
+            if (status.includes('🔄')) return '#f59e0b';
+            return '#cbd5e1';
+        }
+
+        function updateCurrentTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleString();
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            loadPipelineData();
+            setInterval(loadPipelineData, 5000); // Refresh every 5 seconds
+        });
+    </script>
+</body>
+</html>

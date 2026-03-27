@@ -1,0 +1,58 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(git *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(cat *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🔧 Modifying file — will validate on save'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ File updated — remember to /crystallize learnings at end of session'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📋 Session ending. Run /crystallize to save learnings, /finish to summarize.'"
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "vaf-knowledge-base": {
+      "command": "node",
+      "args": ["/Users/mcmehmios/repos/mcp-v-enterprise-server/src/index.js"],
+      "env": {
+        "OBSIDIAN_PATH": "/Users/mcmehmios/Desktop/SecondBrain/AgentForce",
+        "KB_TYPE": "obsidian"
+      }
+    }
+  }
+}

@@ -1,12 +1,26 @@
-node_modules/
+# Environment (NEVER commit)
 .env
-.env.local
-outputs/
+
+# Private context (real financial data)
+context/financial-snapshot.md
+
+# Runtime outputs
+enterprise/outputs/
 logs/
-*.pyc
+*.log
+
+# Node
+mcp/node_modules/
+
+# Python
 __pycache__/
-.vscode/
-.idea/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# macOS
 .DS_Store
-*.swp
-*.swo
+
+# Checkpoints with real data
+context/checkpoint-*.md
