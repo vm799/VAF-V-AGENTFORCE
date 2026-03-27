@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "obsidian": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-obsidian",
+        "/path/to/your/V AgentForce"
+      ],
+      "env": {}
+    }
+  }
+}

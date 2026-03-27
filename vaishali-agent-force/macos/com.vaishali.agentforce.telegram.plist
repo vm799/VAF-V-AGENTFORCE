@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.vaishali.agentforce.telegram</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__VAF_PYTHON__</string>
+        <string>-m</string>
+        <string>vaishali.telegram_bot.run</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__VAF_PROJECT__</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>VAF_BASE_DIR</key>
+        <string>__VAF_PROJECT__</string>
+        <key>PYTHONPATH</key>
+        <string>__VAF_PROJECT__/src</string>
+        <key>VAF_TELEGRAM_TOKEN</key>
+        <string>__TELEGRAM_TOKEN__</string>
+        <key>VAF_TELEGRAM_CHAT_ID</key>
+        <string>__TELEGRAM_CHAT_ID__</string>
+    </dict>
+
+    <!-- Start on login, restart if crashed -->
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>__VAF_PROJECT__/logs/telegram.log</string>
+    <key>StandardErrorPath</key>
+    <string>__VAF_PROJECT__/logs/telegram.err</string>
+
+    <key>Nice</key>
+    <integer>5</integer>
+</dict>
+</plist>

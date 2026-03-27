@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaishali Agent Force — Daily Start</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg:        #0f0c1a;
+    --surface:   #1a1530;
+    --surface2:  #221d3a;
+    --border:    #312b52;
+    --purple:    #a490c2;
+    --blue:      #0066ff;
+    --cyan:      #00e5ff;
+    --green:     #00d97e;
+    --orange:    #ff8c42;
+    --red:       #ff4d6d;
+    --yellow:    #ffd166;
+    --text:      #e6e2f4;
+    --muted:     #7b708f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--cyan), var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+  .header .date {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card.green::before  { background: var(--green); }
+  .card.blue::before   { background: var(--blue); }
+  .card.purple::before { background: var(--purple); }
+  .card.orange::before { background: var(--orange); }
+  .card.cyan::before   { background: var(--cyan); }
+  .card.yellow::before { background: var(--yellow); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .card-icon {
+    font-size: 1.5rem;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface2);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .card-title { font-size: 1rem; font-weight: 700; }
+  .card-badge {
+    margin-left: auto;
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-once  { background: #2d1f4a; color: var(--purple); border: 1px solid #4a3575; }
+  .badge-daily { background: #0d2d1a; color: var(--green);  border: 1px solid #1a5c36; }
+  .badge-tele  { background: #0a1f40; color: var(--cyan);   border: 1px solid #1a4080; }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step-num {
+    min-width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700;
+    margin-top: 2px;
+  }
+  .green  .step-num { background: #0d3321; color: var(--green); }
+  .blue   .step-num { background: #0a1f40; color: #6ea8ff; }
+  .purple .step-num { background: #2d1f4a; color: var(--purple); }
+  .orange .step-num { background: #3d2310; color: var(--orange); }
+  .cyan   .step-num { background: #0a2d35; color: var(--cyan); }
+  .yellow .step-num { background: #352d0a; color: var(--yellow); }
+
+  .step-body { flex: 1; }
+  .step-body strong { font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 3px; }
+  .step-body p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 7px;
+    color: var(--cyan);
+    display: inline-block;
+    margin: 2px 0;
+  }
+
+  .cmd-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+  }
+  .cmd-comment { color: var(--muted); }
+  .cmd-line { color: var(--green); }
+
+  .tg-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .tg-cmd {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .tg-cmd .emoji { font-size: 0.95rem; margin-top: 1px; }
+  .tg-cmd .info strong {
+    display: block;
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cyan);
+    margin-bottom: 2px;
+  }
+  .tg-cmd .info span {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  .section-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .tip-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .tip-box strong { color: var(--yellow); }
+
+  .agents-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .agent-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+  }
+  .agent-pill .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+
+  .full-width { grid-column: 1 / -1; }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .flow-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .flow-arrow { color: var(--muted); font-size: 1rem; }
+
+  .footer {
+    text-align: center;
+    margin-top: 36px;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚀 Vaishali Agent Force</h1>
+  <p>Your personal operating system — running 24/7</p>
+  <div class="date" id="dateDisplay">Loading...</div>
+</div>
+
+<div class="grid">
+
+  <!-- ONE-TIME SETUP -->
+  <div class="card green">
+    <div class="card-header">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">One-Time Setup</div>
+      <span class="card-badge badge-once">Do Once</span>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Open Terminal, go to your project</strong>
+        <p><code>cd ~/Desktop/vaishali-agent-force</code></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Install LaunchAgents (auto-start on login)</strong>
+        <p><code>./vaf.sh start</code><br>
+        Everything runs automatically every time you log in.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Set up phone access tunnel</strong>
+        <p><code>./scripts/setup_tunnel.sh</code><br>
+        Follow the prompts — installs Cloudflare tunnel so your dashboard works on your phone.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Check your .env file has these</strong>
+        <div class="cmd-block">
+          <span class="cmd-comment"># Required</span><br>
+          <span class="cmd-line">VAF_TELEGRAM_TOKEN=your_bot_token</span><br>
+          <span class="cmd-line">VAF_TELEGRAM_CHAT_ID=your_chat_id</span><br>
+          <span class="cmd-line">VAF_OBSIDIAN_VAULT_DIR=/path/to/SecondBrain</span><br>
+          <span class="cmd-comment"># Optional (for AI summaries)</span><br>
+          <span class="cmd-line">VAF_ANTHROPIC_KEY_1=sk-ant-...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <strong>💡 After this</strong> — you never need to touch the terminal again. Everything starts at login, briefing lands in Telegram at 7am, evening update at 9pm.
+    </div>
+  </div>
+
+  <!-- DAILY ON MAC -->
+  <div class="card blue">
+    <div class="card-header">
+      <div class="card-icon">💻</div>
+      <div class="card-title">Daily on Mac</div>
+      <span class="card-badge badge-daily">Automatic</span>
+    </div>
+
+    <p class="section-label">If LaunchAgents are installed — nothing to do</p>
+
+    <div class="step">
+      <div class="step-num">✓</div>
+      <div class="step-body">
+        <strong>Everything auto-starts at login</strong>
+        <p>Dashboard, Telegram bot, tunnel — all come up when you log in.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">✓</div>
+      <div class="step-body">
+        <strong>Morning briefing arrives at 7am in Telegram</strong>
+        <p>Tap the buttons in the message to drill down into any agent.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <p class="section-label">If you need to manage services manually</p>
+
+    <div class="cmd-block">
+      <span class="cmd-comment"># Check everything is running</span><br>
+      <span class="cmd-line">./vaf.sh status</span><br><br>
+      <span class="cmd-comment"># Restart if something's stuck</span><br>
+      <span class="cmd-line">./vaf.sh restart</span><br><br>
+      <span class="cmd-comment"># Start without LaunchAgents (dev mode)</span><br>
+      <span class="cmd-line">./vaf.sh quick</span><br><br>
+      <span class="cmd-comment"># Open dashboard in browser</span><br>
+      <span class="cmd-line">open http://localhost:3000</span>
+    </div>
+
+    <div class="tip-box">
+      <strong>📱 From your phone:</strong> send <code>/services</code> in Telegram to check status, <code>/restart</code> to bounce everything — no need to touch your Mac.
+    </div>
+  </div>
+
+  <!-- DAILY TELEGRAM -->
+  <div class="card cyan full-width">
+    <div class="card-header">
+      <div class="card-icon">📱</div>
+      <div class="card-title">Daily Telegram Workflow</div>
+      <span class="card-badge badge-tele">From Your Phone</span>
+    </div>
+
+    <div class="tg-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+
+      <div class="tg-cmd">
+        <div class="emoji">🌅</div>
+        <div class="info">
+          <strong>/briefing</strong>
+          <span>Full daily brief with tap-through buttons for every agent</span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">⚠️</div>
+        <div class="info">
+          <strong>/anomalies</strong>
+          <span>Finance flags — tap each to acknowledge or investigate</span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">✍️</div>
+        <div class="info">
+          <strong>/drafts</strong>
+          <span>Content waiting for your review — approve or reject</span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">💡</div>
+        <div class="info">
+          <strong>/ideas</strong>
+          <span>Top content ideas ranked by impact/effort score</span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">💰</div>
+        <div class="info">
+          <strong>/spend 45 Tesco</strong>
+          <span>Log spending instantly. Use + prefix for income: <em>/spend +3450 Salary</em></span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">🏃</div>
+        <div class="info">
+          <strong>/log</strong>
+          <span>Health check-in: <em>/log 8000 steps, 7h sleep, mood 4</em></span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">🧠</div>
+        <div class="info">
+          <strong>/dump</strong>
+          <span>Capture a thought: <em>/dump I need to prep Q2 deck by Friday</em></span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">📚</div>
+        <div class="info">
+          <strong>Drop a link</strong>
+          <span>Any YouTube/article URL — auto-extracts & summarises for education agent</span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">📄</div>
+        <div class="info">
+          <strong>Send CSV file</strong>
+          <span>Bank statement CSV — auto-detects format, ingests to finance agent</span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">📸</div>
+        <div class="info">
+          <strong>Send photo</strong>
+          <span>Photo of bank statement — OCR extracts transactions automatically</span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">⏰</div>
+        <div class="info">
+          <strong>/schedule</strong>
+          <span><em>/schedule every weekday at 7am morning briefing</em></span>
+        </div>
+      </div>
+
+      <div class="tg-cmd">
+        <div class="emoji">🌐</div>
+        <div class="info">
+          <strong>/webdash</strong>
+          <span>Get your dashboard URL to open full visual dashboard on phone</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONTENT PIPELINE -->
+  <div class="card purple">
+    <div class="card-header">
+      <div class="card-icon">🦊</div>
+      <div class="card-title">Content Pipeline</div>
+      <span class="card-badge badge-daily">Foxy</span>
+    </div>
+
+    <p class="section-label">End-to-end from idea to published</p>
+
+    <div class="flow-row">
+      <div class="flow-box">💡 /idea</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">📊 Scored</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">📝 /drafts</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">✅ Approve</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">🎉 /publish</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Add an idea</strong>
+        <p><code>/idea Video about building AI agents for YouTube</code></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Review &amp; approve drafts</strong>
+        <p><code>/drafts</code> → tap each → ✅ Approve or ❌ Reject</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Mark as published</strong>
+        <p><code>/publish abc123</code> (ID shown in draft detail)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCE WORKFLOW -->
+  <div class="card orange">
+    <div class="card-header">
+      <div class="card-icon">🦉</div>
+      <div class="card-title">Finance Workflow</div>
+      <span class="card-badge badge-daily">Owlbert</span>
+    </div>
+
+    <p class="section-label">Three ways to get statements in</p>
+
+    <div class="step">
+      <div class="step-num">A</div>
+      <div class="step-body">
+        <strong>Quick manual entry</strong>
+        <p><code>/spend 45.50 Tesco groceries</code><br>
+        <code>/spend +3450 Salary</code> (positive = income)</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">B</div>
+      <div class="step-body">
+        <strong>Upload CSV from bank</strong>
+        <p>Download CSV from First Direct → send file to bot → auto-ingests</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">C</div>
+      <div class="step-body">
+        <strong>Photo of statement</strong>
+        <p>Snap photo → send to bot → OCR extracts transactions → <code>/import</code> to ingest</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <p class="section-label">Then review</p>
+    <div class="step">
+      <div class="step-num">→</div>
+      <div class="step-body">
+        <strong>Check anomalies</strong>
+        <p><code>/anomalies</code> → tap each → ✅ Acknowledge or 🔍 Investigate</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENTS STATUS -->
+  <div class="card yellow full-width">
+    <div class="card-header">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Your 6 Agents</div>
+    </div>
+
+    <div class="agents-row">
+      <div class="agent-pill"><div class="dot" style="background:#ffd700"></div>🦉 Owlbert — Finance</div>
+      <div class="agent-pill"><div class="dot" style="background:#ff6b35"></div>🦊 Foxy — Content</div>
+      <div class="agent-pill"><div class="dot" style="background:#4ecdc4"></div>🐱 Whiskers — Education</div>
+      <div class="agent-pill"><div class="dot" style="background:#4ecdc4"></div>🐱 Whiskers — Research</div>
+      <div class="agent-pill"><div class="dot" style="background:#00d97e"></div>🐼 Bamboo — Health</div>
+      <div class="agent-pill"><div class="dot" style="background:#e879f9"></div>🧠 Brain — Braindump</div>
+    </div>
+
+    <div class="divider"></div>
+    <p class="section-label">Admin from phone — no Mac needed</p>
+
+    <div class="tg-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      <div class="tg-cmd">
+        <div class="emoji">📊</div>
+        <div class="info"><strong>/status</strong><span>All 6 agents — one-line each with mood</span></div>
+      </div>
+      <div class="tg-cmd">
+        <div class="emoji">🔄</div>
+        <div class="info"><strong>/restart</strong><span>Restart all services from your phone</span></div>
+      </div>
+      <div class="tg-cmd">
+        <div class="emoji">🔨</div>
+        <div class="info"><strong>/rebuild</strong><span>Rebuild frontend after code changes</span></div>
+      </div>
+      <div class="tg-cmd">
+        <div class="emoji">📋</div>
+        <div class="info"><strong>/logs</strong><span>See last 30 lines of logs for debugging</span></div>
+      </div>
+      <div class="tg-cmd">
+        <div class="emoji">💸</div>
+        <div class="info"><strong>/usage</strong><span>LLM API spend today, broken down by agent</span></div>
+      </div>
+      <div class="tg-cmd">
+        <div class="emoji">⏰</div>
+        <div class="info"><strong>/schedules</strong><span>All scheduled tasks — modify or remove any</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Vaishali Agent Force · Built with 🖤 · All data stays on your Mac
+</div>
+
+<script>
+  // Live date/time
+  function updateDate() {
+    const now = new Date();
+    const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    const time = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+    document.getElementById('dateDisplay').textContent =
+      now.toLocaleDateString('en-GB', opts) + ' · ' + time;
+  }
+  updateDate();
+  setInterval(updateDate, 30000);
+</script>
+</body>
+</html>

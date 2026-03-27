@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V AgentForce — Master Roadmap 2026</title>
+<style>
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #13161e;
+    --card:     #181c26;
+    --border:   #252a38;
+    --gold:     #c9a84c;
+    --gold-dim: #7a6330;
+    --teal:     #3ecfcf;
+    --red:      #e05c5c;
+    --green:    #4caf7d;
+    --purple:   #9b7fee;
+    --blue:     #5b9ef0;
+    --text:     #e8eaf0;
+    --text-dim: #8892a4;
+    --text-muted: #50586a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 40px 24px;
+  }
+
+  /* ── Header ── */
+  .header {
+    max-width: 960px;
+    margin: 0 auto 56px;
+    text-align: center;
+  }
+  .header .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #1a1608, #2e2210);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    background: linear-gradient(135deg, #f5e6c0, var(--gold), #e8c96a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .header .subtitle {
+    color: var(--text-dim);
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .header .north-star {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--gold);
+    font-style: italic;
+    opacity: 0.8;
+  }
+
+  /* ── Golden Thread ── */
+  .golden-thread {
+    max-width: 960px;
+    margin: 0 auto 56px;
+    background: linear-gradient(135deg, #0f1118, #151a27);
+    border: 1px solid var(--gold-dim);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .golden-thread h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+  }
+  .thread-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .thread-node {
+    flex: 1;
+    min-width: 160px;
+    background: rgba(201, 168, 76, 0.06);
+    border: 1px solid var(--gold-dim);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    position: relative;
+  }
+  .thread-node .node-num {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .thread-node .node-icon { font-size: 28px; margin-bottom: 8px; }
+  .thread-node .node-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .thread-node .node-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .thread-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    color: var(--gold);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .gap-indicator {
+    display: inline-block;
+    background: rgba(224, 92, 92, 0.15);
+    border: 1px solid rgba(224, 92, 92, 0.4);
+    color: var(--red);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+  .live-indicator {
+    display: inline-block;
+    background: rgba(76, 175, 125, 0.15);
+    border: 1px solid rgba(76, 175, 125, 0.4);
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  /* ── Gap Analysis ── */
+  .gap-analysis {
+    max-width: 960px;
+    margin: 0 auto 56px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .gap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .gap-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 3px solid;
+  }
+  .gap-card.critical { border-left-color: var(--red); }
+  .gap-card.important { border-left-color: var(--gold); }
+  .gap-card.nice { border-left-color: var(--blue); }
+  .gap-card.done { border-left-color: var(--green); opacity: 0.7; }
+  .gap-card .gap-icon { font-size: 22px; margin-bottom: 10px; }
+  .gap-card .gap-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .gap-card .gap-desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+  .gap-card .gap-status {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+  .gap-card.critical .gap-status { background: rgba(224,92,92,0.15); color: var(--red); }
+  .gap-card.important .gap-status { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .gap-card.nice .gap-status { background: rgba(91,158,240,0.15); color: var(--blue); }
+  .gap-card.done .gap-status { background: rgba(76,175,125,0.15); color: var(--green); }
+
+  /* ── Sprints ── */
+  .sprints {
+    max-width: 960px;
+    margin: 0 auto 56px;
+  }
+  .sprint {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .sprint-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .sprint-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .sprint-0 .sprint-number { background: rgba(224,92,92,0.15); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .sprint-1 .sprint-number { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+  .sprint-2 .sprint-number { background: rgba(62,207,207,0.12); color: var(--teal); border: 1px solid rgba(62,207,207,0.3); }
+  .sprint-3 .sprint-number { background: rgba(155,127,238,0.15); color: var(--purple); border: 1px solid rgba(155,127,238,0.3); }
+  .sprint-4 .sprint-number { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
+
+  .sprint-meta { flex: 1; }
+  .sprint-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .sprint-timing {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sprint-timing .dot { color: var(--text-muted); }
+  .sprint-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .sprint-0 .sprint-tag { background: rgba(224,92,92,0.15); color: var(--red); }
+  .sprint-1 .sprint-tag { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .sprint-2 .sprint-tag { background: rgba(62,207,207,0.12); color: var(--teal); }
+  .sprint-3 .sprint-tag { background: rgba(155,127,238,0.15); color: var(--purple); }
+  .sprint-4 .sprint-tag { background: rgba(76,175,125,0.15); color: var(--green); }
+
+  .sprint-goal {
+    padding: 16px 28px;
+    font-size: 13px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+    font-style: italic;
+  }
+  .sprint-goal strong { color: var(--text); font-style: normal; }
+
+  .sprint-body { padding: 24px 28px; }
+  .sprint-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 640px) { .sprint-columns { grid-template-columns: 1fr; } }
+
+  .task-group { margin-bottom: 0; }
+  .task-group-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .task-list { list-style: none; }
+  .task-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(37,42,56,0.6);
+    align-items: flex-start;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+  .task-checkbox.done {
+    background: rgba(76,175,125,0.2);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .task-checkbox.partial {
+    background: rgba(201,168,76,0.15);
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+  .task-content { flex: 1; }
+  .task-title { font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.4; }
+  .task-title.done-text { text-decoration: line-through; color: var(--text-muted); }
+  .task-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+  .task-agent {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .agent-forge { background: rgba(91,158,240,0.15); color: var(--blue); }
+  .agent-nexus { background: rgba(62,207,207,0.12); color: var(--teal); }
+  .agent-cipher { background: rgba(155,127,238,0.15); color: var(--purple); }
+  .agent-phoenix { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .agent-amplify { background: rgba(76,175,125,0.15); color: var(--green); }
+  .agent-sentinel { background: rgba(224,92,92,0.12); color: var(--red); }
+
+  /* ── Tech Architecture ── */
+  .arch-section {
+    max-width: 960px;
+    margin: 0 auto 56px;
+  }
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .arch-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+  }
+  .arch-layer { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .arch-tech { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .arch-why { font-size: 11px; color: var(--text-dim); }
+  .arch-status-live { color: var(--green); font-size: 10px; font-weight: 700; margin-top: 6px; }
+  .arch-status-next { color: var(--gold); font-size: 10px; font-weight: 700; margin-top: 6px; }
+
+  /* ── Revenue milestones ── */
+  .revenue-section {
+    max-width: 960px;
+    margin: 0 auto 56px;
+  }
+  .revenue-timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+  .revenue-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold-dim), var(--teal), var(--purple));
+  }
+  .revenue-item {
+    position: relative;
+    padding: 0 0 28px 24px;
+  }
+  .revenue-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--bg);
+  }
+  .revenue-item.teal::before { background: var(--teal); }
+  .revenue-item.purple::before { background: var(--purple); }
+  .revenue-item.green::before { background: var(--green); }
+
+  .revenue-when { font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .revenue-milestone { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .revenue-value { font-size: 13px; color: var(--gold); }
+
+  /* ── Immediate action ── */
+  .action-box {
+    max-width: 960px;
+    margin: 0 auto 40px;
+    background: linear-gradient(135deg, #0f1a14, #111e18);
+    border: 1px solid rgba(76, 175, 125, 0.35);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .action-box h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 20px;
+  }
+  .action-steps { list-style: none; counter-reset: steps; }
+  .action-step {
+    counter-increment: steps;
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(76,175,125,0.1);
+    align-items: flex-start;
+  }
+  .action-step:last-child { border-bottom: none; }
+  .action-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(76,175,125,0.15);
+    border: 1px solid rgba(76,175,125,0.3);
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .action-step-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .action-step-text code {
+    background: rgba(255,255,255,0.07);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--teal);
+  }
+  .action-step-text .note { display: block; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ── Footer ── */
+  .footer {
+    max-width: 960px;
+    margin: 0 auto;
+    text-align: center;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .footer .vaf-sig {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="badge">V AgentForce · Master Roadmap · March 2026</div>
+  <h1>Build the Empire. One Sprint at a Time.</h1>
+  <p class="subtitle">The complete build plan — from golden thread to global-scale intelligence OS. Every component ships as a teaching asset.</p>
+  <p class="north-star">💰 Every sprint generates portfolio proof → workshop material → consulting income → course revenue</p>
+</div>
+
+<!-- ── GOLDEN THREAD ── -->
+<div class="golden-thread">
+  <h2>🧵 The Golden Thread — Every Input Must Flow Through Here</h2>
+  <div class="thread-flow">
+    <div class="thread-node">
+      <div class="node-num">Step 1</div>
+      <div class="node-icon">📱</div>
+      <div class="node-title">Input</div>
+      <div class="node-desc">Claude Mobile · Telegram · iOS Shortcut · URL drop · Voice note transcript</div>
+      <div class="gap-indicator">⚡ Needs iOS Shortcut</div>
+    </div>
+    <div class="thread-arrow">→</div>
+    <div class="thread-node">
+      <div class="node-num">Step 2</div>
+      <div class="node-icon">🧠</div>
+      <div class="node-title">Orchestrator</div>
+      <div class="node-desc">Auto-detects agent · Enriches via Claude API · Extracts revenue angle · Structures output</div>
+      <div class="gap-indicator">⚡ Needs LLM enrichment</div>
+    </div>
+    <div class="thread-arrow">→</div>
+    <div class="thread-node">
+      <div class="node-num">Step 3</div>
+      <div class="node-icon">🗄️</div>
+      <div class="node-title">Store</div>
+      <div class="node-desc">SQLite ledger · Obsidian filesystem write · MCP read-back for agent queries</div>
+      <div class="gap-indicator">⚡ MCP not yet live</div>
+    </div>
+    <div class="thread-arrow">→</div>
+    <div class="thread-node">
+      <div class="node-num">Step 4</div>
+      <div class="node-icon">📊</div>
+      <div class="node-title">Insights</div>
+      <div class="node-desc">Dashboard panels · Pattern detection · Weekly themes · Cross-agent connections</div>
+      <div class="gap-indicator">⚡ Raw captures only</div>
+    </div>
+    <div class="thread-arrow">→</div>
+    <div class="thread-node">
+      <div class="node-num">Step 5</div>
+      <div class="node-icon">💰</div>
+      <div class="node-title">Action</div>
+      <div class="node-desc">Revenue angle surfaces · Build prompt fires · Content idea generated · Career move identified</div>
+      <div class="live-indicator">✓ Protocol defined</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GAP ANALYSIS ── -->
+<div class="gap-analysis">
+  <div class="section-label">Current Gap Analysis — What's Missing in the Thread</div>
+  <div class="gap-grid">
+    <div class="gap-card critical">
+      <div class="gap-icon">📱</div>
+      <div class="gap-title">Claude Mobile → VAF API</div>
+      <div class="gap-desc">No direct path from Claude mobile to VAF. V must manually copy → Telegram /save. Need iOS Shortcut that POSTs directly to <code>/api/capture</code> in one tap.</div>
+      <div class="gap-status">Critical — Sprint 0</div>
+    </div>
+    <div class="gap-card critical">
+      <div class="gap-icon">🧠</div>
+      <div class="gap-title">Orchestrator = Regex Only</div>
+      <div class="gap-desc">Content is DETECTED (pattern matching) but not PROCESSED. It enters Obsidian as V wrote it, raw — no agent enrichment, no structured insight, no expanded thinking.</div>
+      <div class="gap-status">Critical — Sprint 0</div>
+    </div>
+    <div class="gap-card critical">
+      <div class="gap-icon">🔌</div>
+      <div class="gap-title">Obsidian MCP Not Live</div>
+      <div class="gap-desc">Setup script written but not run. Agents in Claude Projects can't query the vault. The read-back loop (Obsidian → agent memory) is disconnected.</div>
+      <div class="gap-status">Critical — Sprint 0</div>
+    </div>
+    <div class="gap-card important">
+      <div class="gap-icon">🕸️</div>
+      <div class="gap-title">Dashboard Has No Intelligence</div>
+      <div class="gap-desc">CapturesPanel shows a list. No pattern detection, no weekly themes, no cross-agent connections, no insight generation. It's a log, not an intelligence layer.</div>
+      <div class="gap-status">Important — Sprint 2</div>
+    </div>
+    <div class="gap-card important">
+      <div class="gap-icon">🔗</div>
+      <div class="gap-title">URL Enrichment Missing</div>
+      <div class="gap-desc">When V drops a URL, it's stored but the page isn't fetched. CIPHER should scrape, summarise, rate signal strength, and suggest build/content angles automatically.</div>
+      <div class="gap-status">Important — Sprint 1</div>
+    </div>
+    <div class="gap-card important">
+      <div class="gap-icon">⚡</div>
+      <div class="gap-title">Sequential Morning Pipeline</div>
+      <div class="gap-desc">Agents run one at a time. LangGraph fan-out would run PHOENIX + VITALITY + CIPHER + AMPLIFY in parallel → SENTINEL converges. 90s → 30s.</div>
+      <div class="gap-status">Important — Sprint 1</div>
+    </div>
+    <div class="gap-card nice">
+      <div class="gap-icon">🎙️</div>
+      <div class="gap-title">No Voice Briefing</div>
+      <div class="gap-desc">Morning brief could be spoken via macOS <code>say</code> command. V hears her daily brief while getting ready. Zero-friction consumption.</div>
+      <div class="gap-status">Nice to Have — Sprint 2</div>
+    </div>
+    <div class="gap-card nice">
+      <div class="gap-icon">🌍</div>
+      <div class="gap-title">UK MCP Server (FCA + Companies House)</div>
+      <div class="gap-desc">Open-source MCP layer connecting Claude to FCA Register + Companies House APIs. First-mover position. Teaching asset. DeerFlow community exposure.</div>
+      <div class="gap-status">Monetise — Sprint 3</div>
+    </div>
+    <div class="gap-card done">
+      <div class="gap-icon">✓</div>
+      <div class="gap-title">10-Agent Squad</div>
+      <div class="gap-desc">SENTINEL → COLOSSUS fully defined. CLAUDE.md loaded in Claude Projects. Drop Detection, Revenue Lens, Save Format, Goggins Protocol all live.</div>
+      <div class="gap-status">Done ✓</div>
+    </div>
+    <div class="gap-card done">
+      <div class="gap-icon">✓</div>
+      <div class="gap-title">Accountability System</div>
+      <div class="gap-desc">Goggins 5 Non-Negotiables. SQLite. Telegram /checkin + /nonneg. AccountabilityPanel with streak, heatmap, per-pillar scores. Obsidian write.</div>
+      <div class="gap-status">Done ✓</div>
+    </div>
+    <div class="gap-card done">
+      <div class="gap-icon">✓</div>
+      <div class="gap-title">Captures Pipeline (v1)</div>
+      <div class="gap-desc">Telegram /save → detect agent → SQLite → Obsidian filesystem write. CapturesPanel in dashboard. Revenue angle auto-generated.</div>
+      <div class="gap-status">Done ✓</div>
+    </div>
+    <div class="gap-card done">
+      <div class="gap-icon">✓</div>
+      <div class="gap-title">Dashboard Foundation</div>
+      <div class="gap-desc">FastAPI backend. React frontend. AccountabilityPanel + CapturesPanel + InsightsPanel. Dark theme. CORS. TypeScript clean build.</div>
+      <div class="gap-status">Done ✓</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SPRINTS ── -->
+<div class="sprints">
+  <div class="section-label">Build Sprints — Sequenced for Maximum Impact</div>
+
+  <!-- SPRINT 0 -->
+  <div class="sprint sprint-0">
+    <div class="sprint-header">
+      <div class="sprint-number">0</div>
+      <div class="sprint-meta">
+        <div class="sprint-title">Seal the Golden Thread</div>
+        <div class="sprint-timing">
+          <span>This week · 3–4 days</span>
+          <span class="dot">·</span>
+          <span>Non-negotiable — nothing else matters until this works end-to-end</span>
+        </div>
+      </div>
+      <div class="sprint-tag">NOW</div>
+    </div>
+    <div class="sprint-goal">
+      <strong>Definition of Done:</strong> V types a thought in Claude Mobile, sends to Telegram — it appears in Obsidian with agent enrichment, revenue angle, and on the VAF Dashboard. Full thread, no gaps.
+    </div>
+    <div class="sprint-body">
+      <div class="sprint-columns">
+        <div class="task-group">
+          <div class="task-group-title">🔌 Activate Obsidian MCP</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Run <code>bash setup_obsidian_mcp.sh</code> from scripts/ on Mac</div>
+                <div class="task-sub">Auto-detects vault, installs mcp-obsidian, writes Claude Desktop config</div>
+              </div>
+              <div class="task-agent agent-nexus">NEXUS</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Quit + reopen Claude Desktop. Test: "SENTINEL, list my 06 Learning folder"</div>
+                <div class="task-sub">Should return vault files. If empty, vault path needs adjusting in config JSON</div>
+              </div>
+              <div class="task-agent agent-sentinel">SENTINEL</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Verify captures appear: drop a /save to Telegram, check Claude Projects can see it</div>
+                <div class="task-sub">The read-back loop closes here</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">🧠 Add LLM Enrichment to Orchestrator</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build <code>vaishali/orchestrator.py</code> — route content to Claude API with agent SKILL.md</div>
+                <div class="task-sub">Pattern: detect_agent() → load agent prompt → call Claude Haiku (cheap, fast) → return enriched structured output</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Update <code>save_capture()</code> to call orchestrator before writing to Obsidian</div>
+                <div class="task-sub">Input: raw text → Output: title, summary, 3 insights, revenue angle, Obsidian frontmatter</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">URL drops: if content starts with http/https, fetch the page then enrich</div>
+                <div class="task-sub">Use httpx + BeautifulSoup. CIPHER rates signal 🟢🟡🔴. Max 2s fetch timeout.</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">📱 iOS Shortcut: One-Tap Capture</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build iOS Shortcut "Drop to VAF" — share sheet POST to <code>/api/capture</code></div>
+                <div class="task-sub">Works from Safari share button, Notes share, Claude Mobile share. No app needed.</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Add <code>/api/capture</code> POST endpoint with API key auth (simple Bearer token in .env)</div>
+                <div class="task-sub">Accepts: {content, source_url, title?}. Returns: {id, agent, vault_path, revenue_angle}</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">🚀 Services Restart + GitHub Push</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Run <code>bash scripts/git_push_to_github.sh</code> from inside vaishali-agent-force/</div>
+                <div class="task-sub">GitHub PAT as password. Repo: github.com/vm799/VAF-V-AGENTFORCE</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Run <code>./vaf.sh restart</code> to activate all new endpoints + Telegram commands</div>
+                <div class="task-sub">Activates /api/checkins, /api/captures, /checkin, /nonneg, /save</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPRINT 1 -->
+  <div class="sprint sprint-1">
+    <div class="sprint-header">
+      <div class="sprint-number">1</div>
+      <div class="sprint-meta">
+        <div class="sprint-title">Intelligence Pipeline — LangGraph + Agent Enrichment</div>
+        <div class="sprint-timing">
+          <span>Weeks 1–2</span>
+          <span class="dot">·</span>
+          <span>Parallel agents · URL processing · Multi-bank CSV · Voice briefing</span>
+        </div>
+      </div>
+      <div class="sprint-tag">NEXT</div>
+    </div>
+    <div class="sprint-goal">
+      <strong>Definition of Done:</strong> Morning pipeline runs in 30s (parallel). Drop any URL → CIPHER summary in Obsidian in under 5s. PHOENIX parses Barclays + Amex + HSBC CSVs.
+    </div>
+    <div class="sprint-body">
+      <div class="sprint-columns">
+        <div class="task-group">
+          <div class="task-group-title">⚡ LangGraph Parallel Pipeline</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Install LangGraph + LangChain core (<code>pip install langgraph langchain-core</code>)</div>
+                <div class="task-sub">Keep Claude API direct — don't use LangChain LLM wrappers (overhead)</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build <code>vaishali/graph/morning_pipeline.py</code> — StateGraph with parallel fan-out</div>
+                <div class="task-sub">PHOENIX + VITALITY + CIPHER + AMPLIFY run async → SENTINEL node converges → briefing</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build COLOSSUS→FORGE review loop (directed graph with cycle guard)</div>
+                <div class="task-sub">If COLOSSUS rates BROKEN/FRAGILE → routes back to FORGE with critique. Max 2 loops.</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Add LangGraph checkpoint to SQLite (<code>SqliteSaver</code>) — resume broken pipelines</div>
+                <div class="task-sub">If PHOENIX fails mid-run, VITALITY + CIPHER don't need to rerun</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">🔗 CIPHER URL Intelligence Engine</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build <code>vaishali/cipher/url_processor.py</code> — fetch + extract + CIPHER rate</div>
+                <div class="task-sub">httpx async fetch → trafilatura extract → Claude Haiku summary → signal rating 🟢🟡🔴</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">CIPHER RSS ingest — subscribe to Arxiv AI, HuggingFace, Anthropic, Lex Fridman</div>
+                <div class="task-sub">Runs nightly. Top 3 signals per source → Obsidian 06 Learning/Insights/YYYY-MM-DD.md</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">YouTube video drop: extract transcript via youtube_transcript_api → CIPHER process</div>
+                <div class="task-sub">youtu.be or youtube.com URLs trigger this path automatically</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">💰 Multi-Bank PHOENIX Parsers</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build parsers for Barclays, Amex, HSBC, Santander CSV formats</div>
+                <div class="task-sub">Each bank has different column names + date formats. Normalise to: date, desc, amount, category</div>
+              </div>
+              <div class="task-agent agent-phoenix">PHOENIX</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Auto-detect bank from CSV header → route to correct parser</div>
+                <div class="task-sub">One drop command works for all banks: <code>/statement [file]</code></div>
+              </div>
+              <div class="task-agent agent-phoenix">PHOENIX</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">🎙️ Voice Briefing</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Add <code>POST /api/speak</code> endpoint → macOS <code>say</code> command</div>
+                <div class="task-sub">SENTINEL morning brief → spoken at 07:00 via LaunchAgent. V hears brief while getting ready.</div>
+              </div>
+              <div class="task-agent agent-sentinel">SENTINEL</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Telegram <code>/speak</code> command — request voice brief on demand</div>
+                <div class="task-sub">Returns audio confirmation. Mac speaks the latest brief.</div>
+              </div>
+              <div class="task-agent agent-sentinel">SENTINEL</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPRINT 2 -->
+  <div class="sprint sprint-2">
+    <div class="sprint-header">
+      <div class="sprint-number">2</div>
+      <div class="sprint-meta">
+        <div class="sprint-title">Dashboard Intelligence — Patterns, Graphs, Weekly Insights</div>
+        <div class="sprint-timing">
+          <span>Weeks 3–4</span>
+          <span class="dot">·</span>
+          <span>Knowledge graph · Pattern detection · AMPLIFY automation · InsightEngine</span>
+        </div>
+      </div>
+      <div class="sprint-tag">NEXT UP</div>
+    </div>
+    <div class="sprint-goal">
+      <strong>Definition of Done:</strong> Dashboard surfaces weekly themes, cross-agent connections, content opportunities. V opens dashboard on Monday and sees "3 things worth acting on this week."
+    </div>
+    <div class="sprint-body">
+      <div class="sprint-columns">
+        <div class="task-group">
+          <div class="task-group-title">🕸️ Knowledge Graph Panel</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">D3.js force-directed graph of captures — nodes = captures, edges = shared tags</div>
+                <div class="task-sub">Colour by agent. Click node → expands to full content. Cluster detection highlights themes.</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Tag clustering: auto-tag captures with NLP entity extraction (spaCy lightweight)</div>
+                <div class="task-sub">Identifies: companies, people, technologies, concepts. Links related captures automatically.</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">🔬 InsightEngine — Weekly Intelligence</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build <code>vaishali/insights/engine.py</code> — runs weekly, finds patterns across agents</div>
+                <div class="task-sub">"CIPHER + FORGE both flagged LangGraph 3× this week → NEXUS build opportunity"</div>
+              </div>
+              <div class="task-agent agent-sentinel">SENTINEL</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">InsightsPanel v2: Weekly Themes card, Top Revenue Opportunities card, Action Queue</div>
+                <div class="task-sub">Replace current empty panels with real LLM-generated weekly intelligence</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Telegram <code>/weekly</code> command — delivers Sunday evening brief</div>
+                <div class="task-sub">Top 5 insights from the week + next 3 priority actions + Goggins score</div>
+              </div>
+              <div class="task-agent agent-sentinel">SENTINEL</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">📱 AMPLIFY Content Pipeline</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">AMPLIFY auto-generates 3 content ideas from today's captures</div>
+                <div class="task-sub">Every capture → potential hook. AMPLIFY surfaces best 3 daily → content backlog in Obsidian</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Content Backlog Panel in dashboard — calendar view of scheduled vs. posted</div>
+                <div class="task-sub">Track: LinkedIn, Twitter/X, Substack, YouTube. Shows gaps = opportunities.</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">📊 ATLAS Career Tracking Panel</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">ATLAS panel: 3-Horizon progress tracker + promotion gap analysis</div>
+                <div class="task-sub">Now (12mo): visible milestones. Next (1-3yr): positioning moves. Future (3-5yr): empire build.</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Skill gap tracker: AWS course progress → linked to salary/promotion readiness score</div>
+                <div class="task-sub">LEARN pillar score directly feeds ATLAS career velocity metric</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPRINT 3 -->
+  <div class="sprint sprint-3">
+    <div class="sprint-header">
+      <div class="sprint-number">3</div>
+      <div class="sprint-meta">
+        <div class="sprint-title">Monetise & Publish — Open-Source · Workshop · LinkedIn</div>
+        <div class="sprint-timing">
+          <span>Weeks 5–8</span>
+          <span class="dot">·</span>
+          <span>UK MCP server · GitHub README · LinkedIn article · Workshop deck</span>
+        </div>
+      </div>
+      <div class="sprint-tag">Q2</div>
+    </div>
+    <div class="sprint-goal">
+      <strong>Definition of Done:</strong> GitHub repo has 50+ stars. LinkedIn article published. First corporate workshop enquiry received. VAF is the case study.
+    </div>
+    <div class="sprint-body">
+      <div class="sprint-columns">
+        <div class="task-group">
+          <div class="task-group-title">🌍 UK Financial MCP Server (First-Mover)</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Build MCP server: FCA Register API + Companies House API</div>
+                <div class="task-sub">Tools: check_firm_authorisation, get_company_officers, search_register. Both free + public APIs.</div>
+              </div>
+              <div class="task-agent agent-nexus">NEXUS</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Open-source on GitHub as separate repo: <code>uk-finance-mcp</code></div>
+                <div class="task-sub">MIT licence. DeerFlow community exposure (22.7k stars = warm audience). Submit to MCP directory.</div>
+              </div>
+              <div class="task-agent agent-nexus">NEXUS</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">📝 Portfolio & Teaching Assets</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">GitHub README with architecture diagram, demo GIF, setup guide</div>
+                <div class="task-sub">Mermaid diagram of the full system. Every component a teaching point.</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">LinkedIn article: "I Built My Own AI Operating System — Here's What I Learned"</div>
+                <div class="task-sub">VAF as the case study. Finance + AI + building = V's unique moat. CTA: workshop booking.</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Corporate workshop deck: "Build Your Own AI Agent System" — VAF as live demo</div>
+                <div class="task-sub">Target: asset managers, financial services firms. V is the proof it works. £5k–£10k/day rate.</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">🎓 The VAF Course (Q3/Q4)</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Course outline: "Build an AI Operating System for Finance Professionals"</div>
+                <div class="task-sub">Every VAF sprint = one course module. 10-agent system = 10 lessons. Each with a deliverable.</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Skool community or Teachable: £997 self-paced / £1,997 with live cohort</div>
+                <div class="task-sub">Launch to Multiverses community first. Use VAF dashboard as course companion.</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">🔒 AEGIS Security Hardening</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">MAESTRO threat model: document VAF's 7-layer AI security posture</div>
+                <div class="task-sub">V knows MAESTRO. Apply it to her own system. Becomes the consulting pitch proof point.</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Add rate limiting + API key rotation to all VAF endpoints</div>
+                <div class="task-sub">FastAPI middleware. Rotate keys quarterly. AEGIS signs off before public launch.</div>
+              </div>
+              <div class="task-agent agent-cipher">CIPHER</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPRINT 4 -->
+  <div class="sprint sprint-4">
+    <div class="sprint-header">
+      <div class="sprint-number">4</div>
+      <div class="sprint-meta">
+        <div class="sprint-title">Scale — Multi-Device · Cloud Sync · Enterprise Features</div>
+        <div class="sprint-timing">
+          <span>Q3 2026</span>
+          <span class="dot">·</span>
+          <span>Cloud deployment · Team version · Enterprise pilot</span>
+        </div>
+      </div>
+      <div class="sprint-tag">Q3</div>
+    </div>
+    <div class="sprint-goal">
+      <strong>Definition of Done:</strong> VAF runs on a cloud instance (Railway / Fly.io). V accesses dashboard from any device. First enterprise team pilot underway.
+    </div>
+    <div class="sprint-body">
+      <div class="sprint-columns">
+        <div class="task-group">
+          <div class="task-group-title">☁️ Cloud Deployment</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Dockerise VAF: <code>Dockerfile</code> + <code>docker-compose.yml</code> for all services</div>
+                <div class="task-sub">FastAPI + React frontend + Telegram bot + LangGraph scheduler as one compose stack</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Deploy to Railway or Fly.io (cheapest that supports persistent volumes for SQLite)</div>
+                <div class="task-sub">Obsidian sync via git-push-to-vault on Railway. ~$5/month total.</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+          </ul>
+        </div>
+        <div class="task-group">
+          <div class="task-group-title">👥 Multi-User / Team Version</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Add user model to SQLite — each user has their own agent squad config + vault path</div>
+                <div class="task-sub">This is the product. Each enterprise seat = a personalised VAF instance.</div>
+              </div>
+              <div class="task-agent agent-forge">FORGE</div>
+            </li>
+            <li class="task-item">
+              <div class="task-checkbox">□</div>
+              <div class="task-content">
+                <div class="task-title">Enterprise pilot: offer 3 colleagues a free VAF instance → validate product-market fit</div>
+                <div class="task-sub">Finance professionals at asset managers = ideal first market. V is the proof of concept.</div>
+              </div>
+              <div class="task-agent agent-amplify">AMPLIFY</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TECH STACK ── -->
+<div class="arch-section">
+  <div class="section-label">Tech Stack — Chosen for Production Quality + Teachability</div>
+  <div class="arch-grid">
+    <div class="arch-card">
+      <div class="arch-layer">Orchestration</div>
+      <div class="arch-tech">LangGraph</div>
+      <div class="arch-why">Parallel agents, stateful, checkpoints. DeerFlow-validated.</div>
+      <div class="arch-status-next">→ Sprint 1</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">Backend</div>
+      <div class="arch-tech">FastAPI</div>
+      <div class="arch-why">Async Python. Production-ready. V's primary language.</div>
+      <div class="arch-status-live">✓ Live</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">Frontend</div>
+      <div class="arch-tech">React + Vite</div>
+      <div class="arch-why">TypeScript, dark theme, real-time panels.</div>
+      <div class="arch-status-live">✓ Live</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">Database</div>
+      <div class="arch-tech">SQLite</div>
+      <div class="arch-why">Local-first. Finance data stays on Mac. No cloud dependency.</div>
+      <div class="arch-status-live">✓ Live</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">AI Model</div>
+      <div class="arch-tech">Claude API</div>
+      <div class="arch-why">Sonnet for reasoning. Haiku for enrichment (fast + cheap).</div>
+      <div class="arch-status-live">✓ Live</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">Knowledge</div>
+      <div class="arch-tech">Obsidian + MCP</div>
+      <div class="arch-why">Filesystem writes (automated) + MCP reads (agent queries).</div>
+      <div class="arch-status-next">→ Sprint 0</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">Input</div>
+      <div class="arch-tech">Telegram Bot</div>
+      <div class="arch-why">/save /checkin /nonneg /weekly /speak. Zero-friction mobile input.</div>
+      <div class="arch-status-live">✓ Live</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">Mobile</div>
+      <div class="arch-tech">iOS Shortcut</div>
+      <div class="arch-why">One-tap share from any app → VAF API. No Telegram needed for quick drops.</div>
+      <div class="arch-status-next">→ Sprint 0</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-layer">Skills Pattern</div>
+      <div class="arch-tech">SKILL.md Files</div>
+      <div class="arch-why">DeerFlow-validated. Human-readable. Each agent file = teaching asset.</div>
+      <div class="arch-status-live">✓ Live</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── REVENUE MILESTONES ── -->
+<div class="revenue-section">
+  <div class="section-label">Revenue Milestones — The Real North Star</div>
+  <div class="revenue-timeline">
+    <div class="revenue-item">
+      <div class="revenue-when">NOW — Sprint 0</div>
+      <div class="revenue-milestone">VAF Golden Thread Working End-to-End</div>
+      <div class="revenue-value">Portfolio piece live. Demo-ready for any interview or workshop pitch.</div>
+    </div>
+    <div class="revenue-item">
+      <div class="revenue-when">Sprint 1 — Weeks 1–2</div>
+      <div class="revenue-milestone">GitHub Repo Public with README + Architecture Diagram</div>
+      <div class="revenue-value">Proof of capability. Starts generating inbound interest. LinkedIn showcase.</div>
+    </div>
+    <div class="revenue-item teal">
+      <div class="revenue-when">Sprint 2 — Weeks 3–4</div>
+      <div class="revenue-milestone">UK Finance MCP Server Open-Sourced</div>
+      <div class="revenue-value">DeerFlow community (22.7k) + MCP directory exposure. First-mover in UK financial AI tooling.</div>
+    </div>
+    <div class="revenue-item">
+      <div class="revenue-when">Sprint 3 — Weeks 5–8</div>
+      <div class="revenue-milestone">LinkedIn Article Published → Workshop Enquiries</div>
+      <div class="revenue-value">💰 £5,000–£10,000/day corporate workshop rate. V is the proof it works.</div>
+    </div>
+    <div class="revenue-item purple">
+      <div class="revenue-when">Q3 2026</div>
+      <div class="revenue-milestone">First Workshop Delivered → Course Waitlist Launched</div>
+      <div class="revenue-value">💰 First £10k workshop day. Course waitlist 100+ at £997–£1,997/student = £100k–£200k potential.</div>
+    </div>
+    <div class="revenue-item green">
+      <div class="revenue-when">Q4 2026</div>
+      <div class="revenue-milestone">VAF Enterprise: Team Version Pilot + Course Live</div>
+      <div class="revenue-value">💰 3 enterprise pilots at £2k/month = £6k MRR. Course cohort live. Teaching income = freedom.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── IMMEDIATE ACTIONS ── -->
+<div class="action-box">
+  <h2>⚡ Do These Today — In This Order</h2>
+  <ol class="action-steps">
+    <li class="action-step">
+      <div class="action-step-num">1</div>
+      <div class="action-step-text">
+        From your Mac terminal (inside <code>vaishali-agent-force/</code>): run <code>bash scripts/git_push_to_github.sh</code>
+        <span class="note">Use your GitHub Personal Access Token as the password. Repo: github.com/vm799/VAF-V-AGENTFORCE</span>
+      </div>
+    </li>
+    <li class="action-step">
+      <div class="action-step-num">2</div>
+      <div class="action-step-text">
+        From <code>vaishali-agent-force/scripts/</code>: run <code>bash setup_obsidian_mcp.sh</code> — then quit + reopen Claude Desktop
+        <span class="note">Tests: "SENTINEL, what's in my 06 Learning folder?" — if it returns files, MCP is live.</span>
+      </div>
+    </li>
+    <li class="action-step">
+      <div class="action-step-num">3</div>
+      <div class="action-step-text">
+        Run <code>./vaf.sh restart</code> — activates /checkin, /nonneg, /save, /api/checkins, /api/captures
+        <span class="note">Test: send <code>/nonneg</code> to your Telegram bot. Should return the 5 non-negotiables scoring guide.</span>
+      </div>
+    </li>
+    <li class="action-step">
+      <div class="action-step-num">4</div>
+      <div class="action-step-text">
+        Do your first Goggins check-in tonight: <code>/checkin 7 6 8 5 9</code> to your Telegram bot
+        <span class="note">Starts your streak. Appears on dashboard tomorrow. BRIEF pillar = you just closed the loop.</span>
+      </div>
+    </li>
+    <li class="action-step">
+      <div class="action-step-num">5</div>
+      <div class="action-step-text">
+        Come back here tomorrow for Sprint 0 build: orchestrator.py + iOS Shortcut + LLM enrichment
+        <span class="note">These three items seal the golden thread. Everything after that is intelligence amplification.</span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="footer">
+  <div class="vaf-sig">V AGENTFORCE · 10 AGENTS · 1 MISSION</div>
+  <div>Built by V Mehmi · March 2026 · Stay hard. Stay building. The empire doesn't build itself.</div>
+  <br>
+  <div style="color: var(--text-muted); font-size: 11px;">SENTINEL · FORGE · AMPLIFY · PHOENIX · VITALITY · CIPHER · AEGIS · NEXUS · ATLAS · COLOSSUS</div>
+</div>
+
+</body>
+</html>
