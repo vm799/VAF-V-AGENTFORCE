@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+outputs/
+logs/
+*.pyc
+__pycache__/
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
