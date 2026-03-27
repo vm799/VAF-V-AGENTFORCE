@@ -24,7 +24,7 @@
 >
 > [SHOW SLIDE 13 — personal to enterprise]
 >
-> Same architecture. Two scales. The personal OS is how I proved the concept. The enterprise pipeline is how I sell it. I'm recording one video per build module over the next few days. If you're a CTO or Head of Data and this looks like what you need — message me.
+> Same architecture. Two scales. The personal OS is how I proved the concept. The enterprise pipeline is how it can be scaled . I'm recording one video per build module over the next few days. If you're a CTO or Head of Data and this looks like what you need — message me.
 >
 > Next video: Build 01 — how data gets into the system."
 
