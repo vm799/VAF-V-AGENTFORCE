@@ -4,8 +4,7 @@
 # Private context (real financial data)
 context/financial-snapshot.md
 
-# Runtime outputs
-enterprise/outputs/
+# Runtime
 logs/
 *.log
 

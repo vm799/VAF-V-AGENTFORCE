@@ -1,13 +1,13 @@
-# V AgentForce — Claude OS Router
-**Version:** 3.0 | **Updated:** March 2026
-**Rule:** This file routes. Agent details live in agents/. V's context in V-AgentForce-Project/.
+# V AgentForce — Personal AI Operating System
+**Version:** 4.0 | **Updated:** March 2026
+**Rule:** This file routes. Agent details live in agents/. V's context in context/.
 
 ---
 
 ## WHO V IS
 
 **Vaishali Mehmi.** UK-based. Senior professional at a global asset management company. Self-taught AI builder. Emerging educator teaching AI skills to CEOs and companies. A mother building a legacy.
-Full context: `V-AgentForce-Project/WHO_I_AM.md` | Goals: `V-AgentForce-Project/GOALS_2026.md`
+Full context: `context/WHO_I_AM.md` | Goals: `context/GOALS_2026.md` | Vault: `context/OBSIDIAN_VAULT_STRUCTURE.md`
 
 ---
 
@@ -92,7 +92,6 @@ Next step: [One concrete action in 48 hours]
 | `fetch_knowledge` | Loading a specific document from vault |
 | `crystallize_learning` | Saving insight/decision to vault |
 | `validate_compliance` | Checking work against standards |
-| `get_pipeline_status` | Enterprise pipeline run status |
 
 ## Commands
 
@@ -106,7 +105,7 @@ Next step: [One concrete action in 48 hours]
 ## Universal Rules
 
 - Knowledge base: ~/Desktop/SecondBrain/AgentForce (via MCP)
-- Enterprise pipeline: enterprise/orchestrator.py
+- Enterprise pipeline: see [v-enterprise-architecture](https://github.com/vm799/v-enterprise-architecture) repo
 - Never commit real financial data (context/financial-snapshot.md is private)
 - Load only what's triggered — progressive disclosure
 - End every session with /extract-learnings or /finish
