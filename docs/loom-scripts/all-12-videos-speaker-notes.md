@@ -44,7 +44,7 @@
 >
 > Every record gets a SHA-256 checksum and a source tag. The manifest records exactly what arrived, when, and from where. If a source fails, it logs the failure and continues — it never halts the pipeline for one bad source.
 >
-> This matters because in every organisation I've consulted with, the first problem is always the same: data exists in twelve places and nobody has a single ingest point. Build 01 solves that.
+> This matters because in most organisations, the first problem is always the same: data exists in twelve places and nobody has a single ingest point. Build 01 solves that.
 >
 > Next: Build 02 — what happens when the data is dirty."
 
