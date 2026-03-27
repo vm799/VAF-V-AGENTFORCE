@@ -56,6 +56,7 @@ class VAFOrchestrator:
         7: {"name": "Compliance", "path": "vaf-am-build-07-compliance", "implemented": True},
         8: {"name": "Synthesis", "path": "vaf-am-build-08-synthesis", "implemented": True},
         9: {"name": "Output", "path": "vaf-am-build-09-output", "implemented": True},
+        10: {"name": "Self-Healing", "path": "vaf-am-build-10-self-healing", "implemented": True},
     }
 
     def __init__(self, root_dir: Path = Path(".")):
@@ -149,7 +150,7 @@ class VAFOrchestrator:
         self.results.append(result)
         return result
 
-    async def run_pipeline(self, mode: str = "full"):
+    async def run_pipeline(self, mode: str = "full", self_heal: bool = False):
         """Run the full 9-step pipeline."""
         print("\n" + "=" * 60)
         print("🚀 VAF AM Series — Production Pipeline")
@@ -168,6 +169,11 @@ class VAFOrchestrator:
         # Run builds sequentially
         for build_num in builds_to_run:
             await self.run_build(build_num)
+
+        # Run Build 10 self-healing loop if requested
+        if self_heal:
+            print("\n🔄 Running Build 10 — Self-Healing Loop")
+            await self.run_build(10)
 
         # Summary
         await self.print_summary()
@@ -285,6 +291,12 @@ Examples:
         help="Pipeline execution mode (default: full)"
     )
     parser.add_argument(
+        "--self-heal",
+        action="store_true",
+        default=False,
+        help="Run Build 10 self-healing loop after pipeline completes"
+    )
+    parser.add_argument(
         "--format",
         choices=["json", "markdown"],
         default="json",
@@ -296,7 +308,7 @@ Examples:
     orchestrator = VAFOrchestrator(Path.cwd())
 
     if args.command == "run":
-        await orchestrator.run_pipeline(mode=args.mode)
+        await orchestrator.run_pipeline(mode=args.mode, self_heal=args.self_heal)
     elif args.command == "show-status":
         orchestrator.show_status()
     elif args.command == "export":
