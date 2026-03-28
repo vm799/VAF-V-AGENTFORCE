@@ -1,190 +1,116 @@
-# Obsidian Vault Structure — V AgentForce
-> The canonical folder map and tag taxonomy for V's entire knowledge system.
-> Tagged: #vaf #obsidian #structure
+# Obsidian Vault Structure — V AgentForce Semantic Filesystem
+> The canonical folder map for V's tiered context database.
+> Architecture: OpenViking-inspired L0/L1/L2 tiered loading.
 
 ---
 
 ## Philosophy
 
-The vault is V's **long-term memory and intelligence layer**. Everything Claude produces that has lasting value should end up here. The structure is designed so that:
-- Any note can be found in under 10 seconds
-- The Knowledge Graph reveals connections between domains
-- Tags make cross-domain insights surfaceable
-- Nothing valuable is ever lost
+The vault is V's **semantic context database** — not just storage, but an intelligent filesystem where every directory knows what it contains (L0 abstract), how it's structured (L1 overview), and the full detail is loaded only when needed (L2).
+
+**Loading protocol:** L0 first → L1 if relevant → L2 only when confirmed. **87% token savings.**
+
+Every directory has:
+- `.abstract.md` (~100 tokens) — one-sentence summary for instant relevance check
+- `.overview.md` (~2K tokens) — structural overview with navigation to children
 
 ---
 
 ## Folder Structure
 
 ```
-V AgentForce/                    ← Root (already exists)
+SecondBrain/AgentForce/
 │
-├── 00 INBOX/                    ← Everything lands here first. Clear daily.
-│   └── [Raw captures, quick notes, unprocessed]
+├── resources/                              # EXTERNAL KNOWLEDGE
+│   ├── enterprise-pipeline/                # VAF 10-build data intelligence pipeline
+│   ├── market-intelligence/                # Sector reports, competitor analysis
+│   ├── learning/                           # AI research, CIPHER syntheses
+│   ├── consulting/                         # Client frameworks, processes
+│   └── standards/                          # Compliance, governance, ADRs
 │
-├── 01 Brain Dumps/              ← Processed brain dump sessions
-│   └── YYYY-MM/
-│       └── YYYY-MM-DD Brain Dump.md
+├── user/                                   # V'S PERSISTENT MEMORY
+│   └── memories/
+│       ├── preferences/                    # Communication, business, coding style
+│       ├── entities/                       # Projects, people, concepts
+│       └── events/                         # Decisions, milestones (immutable)
 │
-├── 02 Finance/                  ← All financial records and analysis
-│   ├── Statements/
-│   │   └── YYYY-MM/
-│   │       └── YYYY-MM Statement Analysis.md
-│   ├── Reviews/
-│   │   └── YYYY-MM Monthly Review.md
-│   ├── Goals/
-│   │   └── Financial Goals 2026.md
-│   └── Templates/
-│       └── Statement Analysis Template.md
+├── agent/                                  # AGENT LEARNED INTELLIGENCE
+│   ├── memories/
+│   │   ├── cases/                          # Problem → solution pairs (immutable)
+│   │   └── patterns/                       # Reusable strategies (mergeable)
+│   ├── skills/                             # Tool definitions
+│   └── instructions/                       # Agent 00-09 directives
 │
-├── 03 Builds/                   ← All software projects
-│   ├── Vaishali Agent Force/
-│   │   ├── Architecture.md
-│   │   ├── Decisions/           ← Architecture Decision Records
-│   │   └── Sprints/
-│   ├── [Project Name]/
-│   │   ├── PRD.md
-│   │   ├── Architecture.md
-│   │   └── Sprints/
-│   └── Ideas/                   ← Build ideas not yet started
-│       └── [idea name].md
+├── sessions/                               # CONVERSATION ARCHIVES
+│   ├── {session-id}/
+│   │   ├── .abstract.md                    # What was discussed
+│   │   ├── .overview.md                    # Key decisions, outcomes
+│   │   └── messages.jsonl                  # Full conversation
+│   └── history/
 │
-├── 04 Content/                  ← All content production
-│   ├── YouTube/
-│   │   └── YYYY-MM/
-│   ├── Instagram/
-│   │   └── YYYY-MM/
-│   ├── LinkedIn/
-│   │   └── YYYY-MM/
-│   ├── Substack/
-│   │   └── YYYY-MM/
-│   └── Content Calendar.md
-│
-├── 05 Teaching/                 ← Courses, workshops, curriculum
-│   ├── Course Ideas/
-│   ├── AI for Professionals/    ← V's flagship course
-│   │   ├── Curriculum.md
-│   │   └── Modules/
-│   └── Corporate Workshops/
-│
-├── 06 Learning/                 ← Everything V is consuming and learning
-│   ├── AI News/
-│   │   └── YYYY-MM/
-│   │       └── YYYY-MM-DD [Topic].md
-│   ├── Insights/                ← Link drop analysis (from VAF education pipeline)
-│   │   ├── ai/
-│   │   ├── finance/
-│   │   ├── tech/
-│   │   └── [other categories]/
-│   ├── Weekly Syntheses/
-│   │   └── YYYY-MM-DD Week Synthesis.md
-│   └── Resources/
-│       ├── AI Experts.md        ← Mirror of AI_EXPERTS_DATABASE.md
-│       └── Reading List.md
-│
-├── 07 Health/                   ← Health tracking and protocols
-│   ├── Weekly Check-ins/
-│   │   └── YYYY-MM-DD Check-in.md
-│   ├── Protocols/
-│   │   └── My Health Protocol.md
-│   └── Nutrition/
-│       └── Meal Plans/
-│
-├── 08 Career/                   ← Work, promotion, professional
-│   ├── Promotion Case.md        ← Running document for promotion evidence
-│   ├── Wins/                    ← Log every work achievement
-│   │   └── YYYY-MM-DD Win.md
-│   └── Reviews/
-│
-├── 09 Daily Notes/              ← Optional: daily journal / log
-│   └── YYYY-MM-DD.md
-│
-├── 10 Goals/                    ← Goals and reviews
-│   ├── Goals 2026.md            ← Mirror of GOALS_2026.md
-│   ├── Q1 Review.md
-│   └── Monthly Reviews/
-│
-└── 99 Archive/                  ← Completed or inactive items
-    └── [Year]/
+└── inbox/                                  # Quick capture (clears daily)
+```
+
+---
+
+## Memory Categories
+
+| Category | Scope | Mutability | Example |
+|----------|-------|-----------|---------|
+| **preferences** | user | appendable | "Prefers direct answers, ROI focus" |
+| **entities** | user | appendable | "Project: KidsVid pipeline" |
+| **events** | user | immutable | "Decided to expand ATLAS (2026-03-28)" |
+| **cases** | agent | immutable | "ROI question → ATLAS venture eval" |
+| **patterns** | agent | mergeable | "Multi-agent: route to PRIMARY INTENT" |
+
+**Immutable** = historical record, never changed
+**Appendable** = grows over time (new info added)
+**Mergeable** = refined as agent learns more
+
+---
+
+## MCP Access Protocol
+
+```
+# 1. Navigate (cheap, ~500 tokens)
+tree("resources", depth=2)
+
+# 2. Check relevance (very cheap, ~100 tokens)
+abstract("resources/enterprise-pipeline")
+
+# 3. Understand structure (medium, ~2K tokens)
+overview("resources/enterprise-pipeline")
+
+# 4. Load full content (expensive, only when needed)
+fetch_knowledge("build-06-council")
+
+# 5. Search with directory context
+search_knowledge("council agent debate")
+
+# 6. Persist memories
+save_memory("agent", "cases", "name", "content")
+save_memory("user", "preferences", "name", "content")
+
+# 7. Archive sessions
+commit_session("session-id", messages, abstract, overview)
 ```
 
 ---
 
 ## Tag Taxonomy
 
-### Domain tags (every note gets one)
-```
-#finance       #builds        #content       #teaching
-#health        #learning      #career        #braindump
-#goals         #obsidian
-```
-
-### Agent tags (who produced this)
-```
-#agent/cfo          #agent/architect    #agent/content
-#agent/health       #agent/education    #agent/librarian
-```
-
-### Status tags
-```
-#status/inbox       #status/active      #status/done
-#status/paused      #status/archived
-```
-
-### Action tags
-```
-#actionable         #decision           #review-weekly
-#review-monthly     #high-priority
-```
-
-### Content type tags
-```
-#note               #analysis           #template
-#reference          #insight            #idea
-#sprint             #adr
-```
+- Domain: `#finance`, `#builds`, `#content`, `#teaching`, `#health`, `#learning`, `#career`
+- Agent: `#agent/sentinel`, `#agent/forge`, `#agent/amplify`, `#agent/phoenix`, `#agent/vitality`, `#agent/cipher`, `#agent/aegis`, `#agent/nexus`, `#agent/atlas`, `#agent/colossus`
+- Status: `#status/inbox`, `#status/active`, `#status/done`, `#status/paused`
+- Memory: `#memory/preference`, `#memory/entity`, `#memory/event`, `#memory/case`, `#memory/pattern`
+- Context tier: `#L0`, `#L1`, `#L2`
 
 ---
 
-## Knowledge Graph Design
+## Legacy Compatibility
 
-These connections should be made explicit with `[[wikilinks]]` in every note:
-
-**Finance → Builds:** When a finance insight generates a build idea, link the statement analysis to the build idea note.
-
-**Learning → Content:** When V learns something worth teaching, link the learning note to the content idea note.
-
-**Builds → Teaching:** When V ships a feature, link the sprint note to a content/teaching note ("this becomes a tutorial").
-
-**Goals → Everything:** All notes that contribute to a goal should link back to `Goals 2026.md`.
-
-**Daily Notes → Everything:** Daily notes are the connective tissue — link out to whatever was worked on.
-
----
-
-## How Claude Outputs to Obsidian
-
-Every Claude response that produces a note will include:
-
-```
----
-Obsidian note ready:
-Vault path: V AgentForce/[folder]/[filename].md
-Tags: #[domain] #[agent] #[status]
----
-[Note content in markdown]
-```
-
-V pastes this into Obsidian at the specified path. Over time, the vault becomes a comprehensive intelligence layer that the Knowledge Graph makes navigable visually.
-
----
-
-## The Knowledge Graph Promise
-
-Once the vault has 50+ linked notes, the graph view reveals:
-- Which domains are most connected (builds + content = V's creative engine)
-- Which ideas keep recurring (signal to act on them)
-- Which agents are most active (where V is spending mental energy)
-- Orphan notes (ideas that haven't been connected yet — find them, link them or archive them)
-
-Run a monthly graph review: open Obsidian Graph View, look for clusters and orphans, and ask: *"What is the vault trying to tell me about where my attention is and where it should be?"*
+Original folders preserved but content mirrored to semantic structure:
+- `ADRs/` → `resources/standards/adrs/`
+- `Standards/` → `resources/standards/`
+- `Processes/` → `resources/consulting/processes/`
+- `Learnings/` → `agent/memories/patterns/`
